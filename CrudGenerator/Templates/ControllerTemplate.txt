@@ -1,0 +1,60 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using MyApp.Models;
+using MyApp.Services;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace MyApp.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class {{ModelName}}Controller : ControllerBase
+    {
+        private readonly I{{ModelName}}Service _service;
+
+        public {{ModelName}}Controller(I{{ModelName}}Service service)
+        {
+            _service = service;
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<{{ModelName}}>> GetById(int id)
+        {
+            var item = await _service.GetByIdAsync(id);
+            if (item == null)
+                return NotFound();
+
+            return Ok(item);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<{{ModelName}}>>> GetAll()
+        {
+            return Ok(await _service.GetAllAsync());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Add([FromBody] {{ModelName}} model)
+        {
+            await _service.AddAsync(model);
+            return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] {{ModelName}} model)
+        {
+            if (id != model.Id)
+                return BadRequest();
+
+            await _service.UpdateAsync(model);
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _service.DeleteAsync(id);
+            return NoContent();
+        }
+    }
+}

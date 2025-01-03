@@ -1,0 +1,35 @@
+﻿using MyApp.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace MyApp.Services
+{
+    public interface I{{ModelName}}Service
+    {
+        Task<{{ModelName}}> GetByIdAsync(int id);
+        Task<IEnumerable<{{ModelName}}>> GetAllAsync();
+        Task AddAsync({{ModelName}} model);
+        Task UpdateAsync({{ModelName}} model);
+        Task DeleteAsync(int id);
+    }
+
+    public class {{ModelName}}Service : I{{ModelName}}Service
+    {
+        private readonly I{{ModelName}}Repository _repository;
+
+        public {{ModelName}}Service(I{{ModelName}}Repository repository)
+        {
+            _repository = repository;
+        }
+
+        public async Task<{{ModelName}}> GetByIdAsync(int id) => await _repository.GetByIdAsync(id);
+
+        public async Task<IEnumerable<{{ModelName}}>> GetAllAsync() => await _repository.GetAllAsync();
+
+        public async Task AddAsync({{ModelName}} model) => await _repository.AddAsync(model);
+
+        public async Task UpdateAsync({{ModelName}} model) => await _repository.UpdateAsync(model);
+
+        public async Task DeleteAsync(int id) => await _repository.DeleteAsync(id);
+    }
+}

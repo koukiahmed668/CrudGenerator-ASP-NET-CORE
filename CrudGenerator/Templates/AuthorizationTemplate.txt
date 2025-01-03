@@ -1,0 +1,13 @@
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace YourNamespace
+{
+    public static class AuthorizationExtensions
+    {
+        public static void AddCustomAuthorization(this IServiceCollection services)
+        {
+            // Add role-based authorization policies
+            {{RoleChecks}}
+        }
+    }
+}

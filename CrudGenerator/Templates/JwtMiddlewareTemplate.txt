@@ -1,0 +1,54 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace YourNamespace
+{
+    public class JwtMiddleware
+    {
+        private readonly RequestDelegate _next;
+        private readonly string _key;
+
+        public JwtMiddleware(RequestDelegate next, string key)
+        {
+            _next = next;
+            _key = key;
+        }
+
+        public async Task Invoke(HttpContext context)
+        {
+            var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+            if (token != null)
+                AttachUserToContext(context, token);
+            
+            await _next(context);
+        }
+
+        private void AttachUserToContext(HttpContext context, string token)
+        {
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes(_key);
+                tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                }, out SecurityToken validatedToken);
+
+                var jwtToken = (JwtSecurityToken)validatedToken;
+                var username = jwtToken.Claims.First(x => x.Type == ClaimTypes.Name).Value;
+                context.Items["User"] = username;
+            }
+            catch
+            {
+                // Do nothing if the token is invalid
+            }
+        }
+    }
+}

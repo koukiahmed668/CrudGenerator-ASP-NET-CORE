@@ -1,0 +1,51 @@
+﻿using MyApp.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace MyApp.Repositories
+{
+    public interface I{{ModelName}}Repository
+    {
+        Task<{{ModelName}}> GetByIdAsync(int id);
+        Task<IEnumerable<{{ModelName}}>> GetAllAsync();
+        Task AddAsync({{ModelName}} model);
+        Task UpdateAsync({{ModelName}} model);
+        Task DeleteAsync(int id);
+    }
+
+    public class {{ModelName}}Repository : I{{ModelName}}Repository
+    {
+        private readonly AppDbContext _context;
+
+        public {{ModelName}}Repository(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<{{ModelName}}> GetByIdAsync(int id) => await _context.{{ModelNamePlural}}.FindAsync(id);
+
+        public async Task<IEnumerable<{{ModelName}}>> GetAllAsync() => await _context.{{ModelNamePlural}}.ToListAsync();
+
+        public async Task AddAsync({{ModelName}} model)
+        {
+            _context.{{ModelNamePlural}}.Add(model);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateAsync({{ModelName}} model)
+        {
+            _context.{{ModelNamePlural}}.Update(model);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var model = await GetByIdAsync(id);
+            if (model != null)
+            {
+                _context.{{ModelNamePlural}}.Remove(model);
+                await _context.SaveChangesAsync();
+            }
+        }
+    }
+}

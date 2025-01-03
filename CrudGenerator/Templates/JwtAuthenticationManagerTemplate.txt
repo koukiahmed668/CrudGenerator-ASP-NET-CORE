@@ -1,0 +1,40 @@
+﻿using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace YourNamespace
+{
+    public class JwtAuthenticationManager
+    {
+        private readonly string _key;
+
+        public JwtAuthenticationManager(string key)
+        {
+            _key = key;
+        }
+
+        public async Task<string> Authenticate(string username, string password)
+        {
+            // Validate credentials
+            if (username == "admin" && password == "password") // Example check, replace with real logic
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes(_key);
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(new[] {
+                        new Claim(ClaimTypes.Name, username),
+                        new Claim(ClaimTypes.Role, "Admin")
+                    }),
+                    Expires = DateTime.UtcNow.AddHours(1),
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                };
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+                return tokenHandler.WriteToken(token);
+            }
+            return null;
+        }
+    }
+}

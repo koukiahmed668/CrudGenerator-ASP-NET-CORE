@@ -1,6 +1,8 @@
 ﻿using MyApp.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MyApp.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyApp.Repositories
 {

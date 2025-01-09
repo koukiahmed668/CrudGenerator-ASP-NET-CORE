@@ -73,7 +73,7 @@ namespace CrudGenerator.Services
             var template = await ReadTemplateAsync("AuthorizationTemplate.txt");
 
             var roleChecks = string.Join(Environment.NewLine,
-                roles.Select(role => $"        services.AddAuthorization(options => options.AddPolicy(\"{role}\", policy => policy.RequireRole(\"{role}\"));"));
+                roles.Select(role => $"        services.AddAuthorization(options => options.AddPolicy(\"{role}\", policy => policy.RequireRole(\"{role}\")));"));
 
             return template.Replace("{{RoleChecks}}", roleChecks);
         }
@@ -86,6 +86,28 @@ namespace CrudGenerator.Services
 
             return await File.ReadAllTextAsync(filePath);
         }
+
+
+
+        public async Task<string> GenerateProgramCs()
+        {
+            var template = await ReadTemplateAsync("ProgramTemplate.txt");
+            return template;
+        }
+
+        public async Task<string> GenerateProjectFile(string projectName)
+        {
+            var template = await ReadTemplateAsync("ProjectFileTemplate.txt");
+            return template.Replace("{{ProjectName}}", projectName);
+        }
+
+        public async Task<string> GenerateAppSettingsJson()
+        {
+            var template = await ReadTemplateAsync("AppSettingsTemplate.txt");
+            return template;
+        }
+
+
 
         private string Pluralize(string name)
         {

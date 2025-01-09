@@ -14,5 +14,10 @@ namespace CrudGenerator.Services
         Task<string> GenerateJwtAuthenticationManagerCode();
         Task<string> GenerateJwtMiddlewareCode();
         Task<string> GenerateAuthorizationCode(List<string> roles);
+
+        // New methods for full application generation
+        Task<string> GenerateProgramCs();
+        Task<string> GenerateProjectFile(string projectName);
+        Task<string> GenerateAppSettingsJson();
     }
 }

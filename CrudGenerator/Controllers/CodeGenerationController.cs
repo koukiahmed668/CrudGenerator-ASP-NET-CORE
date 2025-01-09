@@ -66,6 +66,19 @@ namespace CrudGenerator.Controllers
             var authorizationCode = await _codeGenerationService.GenerateAuthorizationCode(roles);
             generatedFiles.Add("AuthorizationExtensions.cs", authorizationCode);
 
+            // Generate Program.cs
+            var programCsCode = await _codeGenerationService.GenerateProgramCs();
+            generatedFiles.Add("Program.cs", programCsCode);
+
+            // Generate project file
+            var projectFileCode = await _codeGenerationService.GenerateProjectFile("GeneratedApp");
+            generatedFiles.Add("GeneratedApp.csproj", projectFileCode);
+
+            // Generate appsettings.json
+            var appSettingsJsonCode = await _codeGenerationService.GenerateAppSettingsJson();
+            generatedFiles.Add("appsettings.json", appSettingsJsonCode);
+
+
             // Check the response type
             if (request.ResponseType == "zip")
             {

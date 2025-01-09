@@ -13,6 +13,18 @@ namespace CrudGenerator
 
             builder.Services.AddScoped<ICodeGenerationService, CodeGenerationService>();
 
+
+            // Configure CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins("http://localhost:4200") // Specify your frontend's URL
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -20,6 +32,9 @@ namespace CrudGenerator
             
 
             var app = builder.Build();
+
+            app.UseCors("AllowFrontend");
+
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

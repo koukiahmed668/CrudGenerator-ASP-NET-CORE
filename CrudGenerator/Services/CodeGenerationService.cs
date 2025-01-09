@@ -89,11 +89,26 @@ namespace CrudGenerator.Services
 
 
 
-        public async Task<string> GenerateProgramCs()
+        public async Task<string> GenerateProgramCs(List<string> modelNames)
         {
             var template = await ReadTemplateAsync("ProgramTemplate.txt");
-            return template;
+
+            // Generate service registrations dynamically for each model
+            var serviceRegistrations = string.Join(Environment.NewLine,
+                modelNames.Select(name =>
+                    $"builder.Services.AddScoped<I{name}Service, {name}Service>();"));
+
+            // Generate repository registrations dynamically for each model
+            var repositoryRegistrations = string.Join(Environment.NewLine,
+                modelNames.Select(name =>
+                    $"builder.Services.AddScoped<I{name}Repository, {name}Repository>();"));
+
+            // Replace placeholders in the template with the generated registrations
+            return template.Replace("{{ServiceRegistrations}}", serviceRegistrations)
+                           .Replace("{{RepositoryRegistrations}}", repositoryRegistrations);
         }
+
+
 
         public async Task<string> GenerateProjectFile(string projectName)
         {

@@ -16,7 +16,7 @@ namespace CrudGenerator.Services
         Task<string> GenerateAuthorizationCode(List<string> roles);
 
         // New methods for full application generation
-        Task<string> GenerateProgramCs();
+        Task<string> GenerateProgramCs(List<string> modelNames);
         Task<string> GenerateProjectFile(string projectName);
         Task<string> GenerateAppSettingsJson();
     }

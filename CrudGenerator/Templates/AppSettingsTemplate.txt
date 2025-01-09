@@ -7,7 +7,7 @@
   },
   "AllowedHosts": "*",
   "ConnectionStrings": {
-    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=GeneratedAppDb;Trusted_Connection=True;MultipleActiveResultSets=true"
+    "DefaultConnection": "Server=your_server;Database=your_database;User Id=your_user;Password=your_password;"
   },
   "JwtSettings": {
     "Secret": "YourJWTSecretKey",

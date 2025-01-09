@@ -67,7 +67,7 @@ namespace CrudGenerator.Controllers
             generatedFiles.Add("AuthorizationExtensions.cs", authorizationCode);
 
             // Generate Program.cs
-            var programCsCode = await _codeGenerationService.GenerateProgramCs();
+            var programCsCode = await _codeGenerationService.GenerateProgramCs(request.Models.ConvertAll(m => m.Name));
             generatedFiles.Add("Program.cs", programCsCode);
 
             // Generate project file

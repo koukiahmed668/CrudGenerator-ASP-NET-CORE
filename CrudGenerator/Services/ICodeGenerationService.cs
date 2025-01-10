@@ -8,7 +8,7 @@ namespace CrudGenerator.Services
         Task<string> GenerateServiceCode(string modelName);
         Task<string> GenerateControllerCode(string modelName);
         Task<string> GenerateRepositoryCode(string modelName);
-        Task<string> GenerateDbContextCode(List<string> modelNames);
+        Task<string> GenerateDbContextCode(List<ModelDefinition> models);
 
         // New methods for authentication and authorization code generation
         Task<string> GenerateJwtAuthenticationManagerCode();

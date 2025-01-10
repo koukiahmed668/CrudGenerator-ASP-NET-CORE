@@ -88,15 +88,56 @@ namespace CrudGenerator.Services
                 .Replace("{{ModelNamePlural}}", Pluralize(modelName));
         }
 
-        public async Task<string> GenerateDbContextCode(List<string> modelNames)
+        public async Task<string> GenerateDbContextCode(List<ModelDefinition> models)
         {
             var template = await ReadTemplateAsync("DbContextTemplate.txt");
 
+            // Generate DbSet properties
             var dbSets = string.Join(Environment.NewLine,
-                modelNames.Select(name => $"        public DbSet<{name}> {Pluralize(name)} {{ get; set; }}"));
+                models.Select(model => $"        public DbSet<{model.Name}> {Pluralize(model.Name)} {{ get; set; }}"));
 
-            return template.Replace("{{DbSets}}", dbSets);
+            // Generate relationship configurations
+            var relationshipConfigurations = string.Join(Environment.NewLine,
+                models.SelectMany(model => model.Relationships.Select(rel => GenerateRelationshipConfiguration(model.Name, rel))));
+
+            return template.Replace("{{DbSets}}", dbSets)
+                           .Replace("{{RelationshipConfigurations}}", relationshipConfigurations);
         }
+
+        private string GenerateRelationshipConfiguration(string modelName, Relationship relationship)
+        {
+            switch (relationship.Type)
+            {
+                case RelationshipType.OneToMany:
+                    // Configure a one-to-many relationship
+                    return $@"
+            modelBuilder.Entity<{modelName}>()
+                .HasMany(e => e.{relationship.PropertyName})
+                .WithOne(e => e.{modelName})
+                .HasForeignKey(e => e.{modelName}Id);";
+
+                case RelationshipType.ManyToOne:
+                    // Configure a many-to-one relationship
+                    return $@"
+            modelBuilder.Entity<{modelName}>()
+                .HasOne(e => e.{relationship.PropertyName})
+                .WithMany(e => e.{modelName})
+                .HasForeignKey(e => e.{relationship.TargetModel}Id);";
+
+                case RelationshipType.ManyToMany:
+                    // Configure a many-to-many relationship using a join table
+                    var joinTableName = $"{modelName}_{relationship.TargetModel}";
+                    return $@"
+            modelBuilder.Entity<{modelName}>()
+                .HasMany(e => e.{relationship.PropertyName})
+                .WithMany(e => e.{modelName})
+                .UsingEntity(j => j.ToTable(""{joinTableName}""));";
+
+                default:
+                    return string.Empty;
+            }
+        }
+
 
 
         // Generate the JwtAuthenticationManager

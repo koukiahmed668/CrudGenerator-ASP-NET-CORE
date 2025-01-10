@@ -36,23 +36,26 @@ namespace CrudGenerator.Controllers
 
                 // Generate code for the model
                 var modelCode = await _codeGenerationService.GenerateModelCode(model.Name, attributes, model.Relationships);
-                generatedFiles.Add($"{model.Name}.cs", modelCode);
+                generatedFiles.Add($"Models/{model.Name}.cs", modelCode); // Add to Models folder
+
                 // Generate service
                 var serviceCode = await _codeGenerationService.GenerateServiceCode(model.Name);
-                generatedFiles.Add($"I{model.Name}Service.cs", serviceCode);
+                generatedFiles.Add($"Services/I{model.Name}Service.cs", serviceCode); // Add to Services folder
 
                 // Generate repository
                 var repositoryCode = await _codeGenerationService.GenerateRepositoryCode(model.Name);
-                generatedFiles.Add($"I{model.Name}Repository.cs", repositoryCode);
+                generatedFiles.Add($"Repositories/I{model.Name}Repository.cs", repositoryCode); // Add to Repositories folder
 
                 // Generate controller
                 var controllerCode = await _codeGenerationService.GenerateControllerCode(model.Name);
-                generatedFiles.Add($"{model.Name}Controller.cs", controllerCode);
+                generatedFiles.Add($"Controllers/{model.Name}Controller.cs", controllerCode); // Add to Controllers folder
             }
 
+
             // Generate DbContext
-            var dbContextCode = await _codeGenerationService.GenerateDbContextCode(request.Models.ConvertAll(m => m.Name));
+            var dbContextCode = await _codeGenerationService.GenerateDbContextCode(request.Models);
             generatedFiles.Add("AppDbContext.cs", dbContextCode);
+
 
             // Generate JWT Authentication Manager
             var jwtAuthManagerCode = await _codeGenerationService.GenerateJwtAuthenticationManagerCode();
@@ -100,7 +103,7 @@ namespace CrudGenerator.Controllers
             {
                 foreach (var file in files)
                 {
-                    var zipEntry = archive.CreateEntry(file.Key);
+                    var zipEntry = archive.CreateEntry(file.Key); // file.Key includes the folder path
                     using (var entryStream = zipEntry.Open())
                     using (var streamWriter = new StreamWriter(entryStream))
                     {
@@ -111,6 +114,7 @@ namespace CrudGenerator.Controllers
             zipStream.Seek(0, SeekOrigin.Begin);
             return zipStream;
         }
+
     }
 
     // Request model for code generation

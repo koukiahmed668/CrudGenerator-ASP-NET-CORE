@@ -4,11 +4,11 @@ namespace CrudGenerator.Services
 {
     public interface ICodeGenerationService
     {
-        Task<string> GenerateModelCode(string modelName, List<(string Name, string Type)> attributes);
+        Task<string> GenerateModelCode(string modelName, List<(string Name, string Type)> attributes, List<(string RelatedModel, string RelationshipType)> relationships);
         Task<string> GenerateServiceCode(string modelName);
         Task<string> GenerateControllerCode(string modelName);
         Task<string> GenerateRepositoryCode(string modelName);
-        Task<string> GenerateDbContextCode(List<string> modelNames);
+        Task<string> GenerateDbContextCode(List<(string ModelName, List<(string RelatedModel, string RelationshipType)> Relationships)> models);
 
         // New methods for authentication and authorization code generation
         Task<string> GenerateJwtAuthenticationManagerCode();

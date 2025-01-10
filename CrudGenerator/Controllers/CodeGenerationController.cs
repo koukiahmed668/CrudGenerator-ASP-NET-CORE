@@ -25,6 +25,9 @@ namespace CrudGenerator.Controllers
         {
             var generatedFiles = new Dictionary<string, string>();
 
+            // Collect model definitions with relationships
+            var modelsWithRelationships = new List<(string ModelName, List<(string RelatedModel, string RelationshipType)> Relationships)>();
+
             foreach (var model in request.Models)
             {
                 // Convert attributes to the expected format (List<(string Name, string Type)>)
@@ -32,8 +35,11 @@ namespace CrudGenerator.Controllers
                     .Select(attr => (attr.Name, attr.Type))
                     .ToList();
 
-                // Generate code for the model
-                var modelCode = await _codeGenerationService.GenerateModelCode(model.Name, attributes);
+                // You should pass relationships too (model.Relationships)
+                var relationships = model.Relationships;
+
+                // Generate model code
+                var modelCode = await _codeGenerationService.GenerateModelCode(model.Name, attributes, relationships);
                 generatedFiles.Add($"{model.Name}.cs", modelCode);
 
                 // Generate service
@@ -47,10 +53,13 @@ namespace CrudGenerator.Controllers
                 // Generate controller
                 var controllerCode = await _codeGenerationService.GenerateControllerCode(model.Name);
                 generatedFiles.Add($"{model.Name}Controller.cs", controllerCode);
+
+                // Add this model and its relationships for DbContext generation
+                modelsWithRelationships.Add((model.Name, relationships));
             }
 
-            // Generate DbContext
-            var dbContextCode = await _codeGenerationService.GenerateDbContextCode(request.Models.ConvertAll(m => m.Name));
+            // Generate DbContext code with model relationships
+            var dbContextCode = await _codeGenerationService.GenerateDbContextCode(modelsWithRelationships);
             generatedFiles.Add("AppDbContext.cs", dbContextCode);
 
             // Generate JWT Authentication Manager
@@ -78,7 +87,6 @@ namespace CrudGenerator.Controllers
             var appSettingsJsonCode = await _codeGenerationService.GenerateAppSettingsJson();
             generatedFiles.Add("appsettings.json", appSettingsJsonCode);
 
-
             // Check the response type
             if (request.ResponseType == "zip")
             {
@@ -89,7 +97,6 @@ namespace CrudGenerator.Controllers
             // Return as plain text (e.g., JSON)
             return Ok(generatedFiles);
         }
-
 
         // Create a zip stream from the generated files
         private MemoryStream CreateZipStream(Dictionary<string, string> files)
@@ -118,7 +125,6 @@ namespace CrudGenerator.Controllers
         public List<ModelDefinition> Models { get; set; }
         public string ResponseType { get; set; } // "zip" or "text"
         public List<string> Roles { get; set; } // Add this property for roles
-
     }
 
     // Model definition for code generation
@@ -126,6 +132,7 @@ namespace CrudGenerator.Controllers
     {
         public string Name { get; set; }
         public List<AttributeDefinition> Attributes { get; set; }
+        public List<(string RelatedModel, string RelationshipType)> Relationships { get; set; } // Add relationships here
     }
 
     // Attribute definition
@@ -134,5 +141,4 @@ namespace CrudGenerator.Controllers
         public string Name { get; set; }
         public string Type { get; set; }
     }
-
 }

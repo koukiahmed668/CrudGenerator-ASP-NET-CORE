@@ -7,7 +7,7 @@
   },
   "AllowedHosts": "*",
   "ConnectionStrings": {
-    "DefaultConnection": "Server=your_server;Database=your_database;User Id=your_user;Password=your_password;"
+    "DefaultConnection": "Server=localhost;Database=your_database;User Id=your_user;Password=your_password;"
   },
   "JwtSettings": {
     "Secret": "YourJWTSecretKey",

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace MyApp.Models
 {
@@ -7,6 +6,5 @@ namespace MyApp.Models
     {
 {{Attributes}}
 
-{{NavigationProperties}}
     }
 }

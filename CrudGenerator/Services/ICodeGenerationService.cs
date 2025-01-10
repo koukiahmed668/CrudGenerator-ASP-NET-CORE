@@ -4,7 +4,7 @@ namespace CrudGenerator.Services
 {
     public interface ICodeGenerationService
     {
-        Task<string> GenerateModelCode(string modelName, List<(string Name, string Type)> attributes);
+        Task<string> GenerateModelCode(string modelName, List<(string Name, string Type)> attributes, List<Relationship> relationships);
         Task<string> GenerateServiceCode(string modelName);
         Task<string> GenerateControllerCode(string modelName);
         Task<string> GenerateRepositoryCode(string modelName);

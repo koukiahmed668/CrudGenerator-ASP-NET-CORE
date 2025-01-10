@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace CrudGenerator.Controllers
@@ -33,9 +35,8 @@ namespace CrudGenerator.Controllers
                     .ToList();
 
                 // Generate code for the model
-                var modelCode = await _codeGenerationService.GenerateModelCode(model.Name, attributes);
+                var modelCode = await _codeGenerationService.GenerateModelCode(model.Name, attributes, model.Relationships);
                 generatedFiles.Add($"{model.Name}.cs", modelCode);
-
                 // Generate service
                 var serviceCode = await _codeGenerationService.GenerateServiceCode(model.Name);
                 generatedFiles.Add($"I{model.Name}Service.cs", serviceCode);
@@ -126,6 +127,8 @@ namespace CrudGenerator.Controllers
     {
         public string Name { get; set; }
         public List<AttributeDefinition> Attributes { get; set; }
+        public List<Relationship> Relationships { get; set; } 
+
     }
 
     // Attribute definition
@@ -135,4 +138,63 @@ namespace CrudGenerator.Controllers
         public string Type { get; set; }
     }
 
+    public class Relationship
+    {
+        public string PropertyName { get; set; }  // e.g., "Orders" in Customer model for one-to-many relationship
+        public string TargetModel { get; set; }    // e.g., "Order" for one-to-many relationship
+
+        [JsonConverter(typeof(RelationshipTypeConverter))]
+        public RelationshipType Type { get; set; }
+    }
+
+    public enum RelationshipType
+    {
+        OneToMany,
+        ManyToOne,
+        ManyToMany
+    }
+
+    public class RelationshipTypeConverter : JsonConverter<RelationshipType>
+    {
+        public override RelationshipType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                string value = reader.GetString();
+                return value switch
+                {
+                    "OneToMany" => RelationshipType.OneToMany,
+                    "ManyToOne" => RelationshipType.ManyToOne,
+                    "ManyToMany" => RelationshipType.ManyToMany,
+                    _ => throw new JsonException($"Invalid value for RelationshipType: {value}")
+                };
+            }
+
+            if (reader.TokenType == JsonTokenType.Number)
+            {
+                int value = reader.GetInt32();
+                return value switch
+                {
+                    1 => RelationshipType.OneToMany,
+                    2 => RelationshipType.ManyToOne,
+                    3 => RelationshipType.ManyToMany,
+                    _ => throw new JsonException($"Invalid value for RelationshipType: {value}")
+                };
+            }
+
+            throw new JsonException($"Unexpected token {reader.TokenType} when reading RelationshipType.");
+        }
+
+        public override void Write(Utf8JsonWriter writer, RelationshipType value, JsonSerializerOptions options)
+        {
+            string enumValue = value switch
+            {
+                RelationshipType.OneToMany => "OneToMany",
+                RelationshipType.ManyToOne => "ManyToOne",
+                RelationshipType.ManyToMany => "ManyToMany",
+                _ => throw new JsonException($"Invalid value for RelationshipType: {value}")
+            };
+            writer.WriteStringValue(enumValue);
+        }
+    }
 }

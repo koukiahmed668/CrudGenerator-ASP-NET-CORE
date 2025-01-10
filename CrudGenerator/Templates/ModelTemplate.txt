@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace MyApp.Models
 {
     public class {{ModelName}}
     {
-{{Attributes}}
+        {{Attributes}}
 
+        {{Relationships}}
     }
 }

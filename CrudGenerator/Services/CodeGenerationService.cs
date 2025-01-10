@@ -11,16 +11,62 @@ namespace CrudGenerator.Services
     {
         private readonly string _templateDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Templates");
 
-        public async Task<string> GenerateModelCode(string modelName, List<(string Name, string Type)> attributes)
+
+
+
+
+
+
+
+        public async Task<string> GenerateModelCode(string modelName, List<(string Name, string Type)> attributes, List<Relationship> relationships)
         {
             var template = await ReadTemplateAsync("ModelTemplate.txt");
 
+            // Generate basic attribute definitions
             var attributeDefinitions = string.Join(Environment.NewLine,
                 attributes.Select(attr => $"        public {attr.Type} {attr.Name} {{ get; set; }}"));
 
+            // Generate foreign key attributes for the "many" side of relationships
+            var foreignKeyAttributes = string.Join(Environment.NewLine,
+                relationships.Where(r => r.Type == RelationshipType.ManyToOne)
+                              .Select(rel => $"        public int {rel.TargetModel}Id {{ get; set; }}"));
+
+            // Merge the generated foreign key attributes with the existing attributes
+            attributeDefinitions = string.Join(Environment.NewLine, new[] { attributeDefinitions, foreignKeyAttributes });
+
+            // Generate the relationship code (navigation properties)
+            var relationshipDefinitions = string.Join(Environment.NewLine,
+                relationships.Select(rel => GenerateRelationshipCode(rel)));
+
             return template.Replace("{{ModelName}}", modelName)
-                           .Replace("{{Attributes}}", attributeDefinitions);
+                           .Replace("{{Attributes}}", attributeDefinitions)
+                           .Replace("{{Relationships}}", relationshipDefinitions);
         }
+
+        private string GenerateRelationshipCode(Relationship relationship)
+        {
+            switch (relationship.Type)
+            {
+                case RelationshipType.OneToMany:
+                    // For a One-to-Many relationship, the "one" side has a collection (no FK here)
+                    return $"        public ICollection<{relationship.TargetModel}> {relationship.PropertyName} {{ get; set; }}";
+
+                case RelationshipType.ManyToOne:
+                    // For a Many-to-One relationship, the "many" side has both FK and navigation property
+                    return $"        public {relationship.TargetModel} {relationship.PropertyName} {{ get; set; }}";
+
+                case RelationshipType.ManyToMany:
+                    // For a Many-to-Many relationship, both sides have collections
+                    return $"        public ICollection<{relationship.TargetModel}> {relationship.PropertyName} {{ get; set; }}";
+
+                default:
+                    return string.Empty;
+            }
+        }
+
+
+
+
 
         public async Task<string> GenerateServiceCode(string modelName)
         {

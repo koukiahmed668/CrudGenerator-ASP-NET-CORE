@@ -3,6 +3,13 @@ using System.Threading.Tasks;
 
 namespace YourNamespace
 {
+
+	public interface IUserService
+	{
+		Task<bool> CreateUserAsync(string username, string password, string[] roles);
+		Task<bool> ValidateUserAsync(string username, string password);
+	}
+
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;

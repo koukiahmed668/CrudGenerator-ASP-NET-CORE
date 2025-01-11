@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System.Linq;
-using YourNamespace.Data; // Your DbContext namespace
+using MyApp.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace YourNamespace
 {

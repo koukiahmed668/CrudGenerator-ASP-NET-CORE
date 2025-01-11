@@ -88,21 +88,33 @@ namespace CrudGenerator.Services
                 .Replace("{{ModelNamePlural}}", Pluralize(modelName));
         }
 
-        public async Task<string> GenerateDbContextCode(List<ModelDefinition> models)
+        public async Task<string> GenerateDbContextCode(List<ModelDefinition> models, bool includeJwtAuthentication)
         {
             var template = await ReadTemplateAsync("DbContextTemplate.txt");
 
-            // Generate DbSet properties
+            // Generate DbSet properties dynamically
             var dbSets = string.Join(Environment.NewLine,
                 models.Select(model => $"        public DbSet<{model.Name}> {Pluralize(model.Name)} {{ get; set; }}"));
+
+            // Add User DbSet if JWT authentication is enabled
+            if (includeJwtAuthentication)
+            {
+                dbSets = $"        public DbSet<User> Users {{ get; set; }}\n" + dbSets;
+            }
 
             // Generate relationship configurations
             var relationshipConfigurations = string.Join(Environment.NewLine,
                 models.SelectMany(model => model.Relationships.Select(rel => GenerateRelationshipConfiguration(model.Name, rel))));
 
+            // Remove `using YourNamespace;` if JWT is not included
+            var namespaceImport = includeJwtAuthentication ? "using YourNamespace;" : string.Empty;
+
+            // Replace placeholders in the template
             return template.Replace("{{DbSets}}", dbSets)
-                           .Replace("{{RelationshipConfigurations}}", relationshipConfigurations);
+                           .Replace("{{RelationshipConfigurations}}", relationshipConfigurations)
+                           .Replace("using YourNamespace;", namespaceImport);
         }
+
 
         private string GenerateRelationshipConfiguration(string modelName, Relationship relationship)
         {
@@ -202,7 +214,7 @@ namespace CrudGenerator.Services
 
 
 
-        public async Task<string> GenerateProgramCs(List<string> modelNames)
+        public async Task<string> GenerateProgramCs(List<string> modelNames, bool includeJwtAuthentication)
         {
             var template = await ReadTemplateAsync("ProgramTemplate.txt");
 
@@ -216,10 +228,46 @@ namespace CrudGenerator.Services
                 modelNames.Select(name =>
                     $"builder.Services.AddScoped<I{name}Repository, {name}Repository>();"));
 
-            // Replace placeholders in the template with the generated registrations
+            // Generate JWT authentication section to include in the builder section
+            var jwtBuilderSection = includeJwtAuthentication
+                ? @"
+        builder.Services.AddAuthentication(""Bearer"")
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(""YourJWTSecretKey"")),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            });
+        builder.Services.AddAuthorization();
+        var key = ""YourSecretKeyHere""; // Replace with a secure key
+        builder.Services.AddSingleton(new JwtAuthenticationManager(key));"
+                : "";
+
+            // Generate JWT middleware section to include after app.Build()
+            var jwtMiddlewareSection = includeJwtAuthentication
+                ? @"
+        app.UseAuthentication();
+        app.UseAuthorization();
+        app.UseMiddleware<JwtMiddleware>(key);"
+                : "";
+
+            // Remove `using YourNamespace;` if JWT is not included
+            var namespaceImport = includeJwtAuthentication ? "using YourNamespace;" : string.Empty;
+
+            // Replace placeholders in the template with the generated content
             return template.Replace("{{ServiceRegistrations}}", serviceRegistrations)
-                           .Replace("{{RepositoryRegistrations}}", repositoryRegistrations);
+                           .Replace("{{RepositoryRegistrations}}", repositoryRegistrations)
+                           .Replace("{{JwtAuthentication}}", jwtBuilderSection)
+                           .Replace("{{JwtMiddleware}}", jwtMiddlewareSection)
+                           .Replace("using YourNamespace;", namespaceImport);
+
         }
+
+
 
 
 

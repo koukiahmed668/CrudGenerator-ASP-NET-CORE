@@ -15,38 +15,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("YourJWTSecretKey")),
-            ValidateIssuer = false,
-            ValidateAudience = false
-        };
-    });
-builder.Services.AddAuthorization();
-
+{{JwtAuthentication}}
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
 builder.Services.AddDbContext<AppDbContext>(options =>
-options.UseMySQL(connectionString)
+    options.UseMySQL(connectionString)
 );
 
-
-
 // Register generated services
-builder.Services.AddScoped<IUserRepository, UserRepository>();
 {{ServiceRegistrations}}
 
 // Register generated repositories
 {{RepositoryRegistrations}}
-
-var key = "YourSecretKeyHere"; // Replace with a secure key
-
-builder.Services.AddSingleton(new JwtAuthenticationManager(key));
-builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 
@@ -64,9 +43,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseAuthentication();
-app.UseAuthorization();
-app.UseMiddleware<JwtMiddleware>(key);
+{{JwtMiddleware}}
 
 app.MapControllers();
 

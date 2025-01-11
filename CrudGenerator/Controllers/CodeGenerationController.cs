@@ -53,42 +53,51 @@ namespace CrudGenerator.Controllers
 
 
             // Generate DbContext
-            var dbContextCode = await _codeGenerationService.GenerateDbContextCode(request.Models);
+
+            var dbContextCode = await _codeGenerationService.GenerateDbContextCode(request.Models, request.IncludeJwtAuthentication);
             generatedFiles.Add("AppDbContext.cs", dbContextCode);
 
+            // Conditionally generate JWT-related files
+            if (request.IncludeJwtAuthentication)
+            {
 
-            // Generate JWT Authentication Manager
-            var jwtAuthManagerCode = await _codeGenerationService.GenerateJwtAuthenticationManagerCode();
-            generatedFiles.Add("JwtAuthenticationManager.cs", jwtAuthManagerCode);
+                // Generate JWT Authentication Manager
+                var jwtAuthManagerCode = await _codeGenerationService.GenerateJwtAuthenticationManagerCode();
+                generatedFiles.Add($"Authentication/JwtAuthenticationManager.cs", jwtAuthManagerCode);
 
-            // Generate JWT Authentication Controller
-            var jwtAuthControllerCode = await _codeGenerationService.GenerateJwtAuthenticationControllerCode();
-            generatedFiles.Add("JwtAuthenticationController.cs", jwtAuthControllerCode);
+                // Generate JWT Authentication Controller
+                var jwtAuthControllerCode = await _codeGenerationService.GenerateJwtAuthenticationControllerCode();
+                generatedFiles.Add("JwtAuthenticationController.cs", jwtAuthControllerCode);
 
-            // Generate JWT Middleware
-            var jwtMiddlewareCode = await _codeGenerationService.GenerateJwtMiddlewareCode();
-            generatedFiles.Add("JwtMiddleware.cs", jwtMiddlewareCode);
+                // Generate JWT Middleware
+                var jwtMiddlewareCode = await _codeGenerationService.GenerateJwtMiddlewareCode();
+                generatedFiles.Add($"Authentication/JwtMiddleware.cs", jwtMiddlewareCode);
 
-            // Generate Authorization Code
-            var roles = request.Roles ?? new List<string> { "User" };  // Default role is User
-            var authorizationCode = await _codeGenerationService.GenerateAuthorizationCode(roles);
-            generatedFiles.Add("AuthorizationExtensions.cs", authorizationCode);
+                // Generate Authorization Code
+                var roles = request.Roles ?? new List<string> { "User" };  // Default role is User
+                var authorizationCode = await _codeGenerationService.GenerateAuthorizationCode(roles);
+                generatedFiles.Add($"Authentication/Extensions/AuthorizationExtensions.cs", authorizationCode);
 
-            // Generate User Service
-            var userServiceCode = await _codeGenerationService.GenerateUserServiceCode();
-            generatedFiles.Add("UserService.cs", userServiceCode);
+                // Generate User Service
+                var userServiceCode = await _codeGenerationService.GenerateUserServiceCode();
+                generatedFiles.Add($"Services/UserService.cs", userServiceCode);
 
-            // Generate User Repository
-            var userRepositoryCode = await _codeGenerationService.GenerateUserRepositoryCode();
-            generatedFiles.Add("UserRepository.cs", userRepositoryCode);
+                // Generate User Repository
+                var userRepositoryCode = await _codeGenerationService.GenerateUserRepositoryCode();
+                generatedFiles.Add($"Repositories/UserRepository.cs", userRepositoryCode);
 
-            // Generate User Entity
-            var userEntityCode = await _codeGenerationService.GenerateUserEntityCode();
-            generatedFiles.Add($"Models/User.cs", userEntityCode);
+                // Generate User Entity
+                var userEntityCode = await _codeGenerationService.GenerateUserEntityCode();
+                generatedFiles.Add($"Models/User.cs", userEntityCode);
 
+            }
             // Generate Program.cs
-            var programCsCode = await _codeGenerationService.GenerateProgramCs(request.Models.ConvertAll(m => m.Name));
+            var programCsCode = await _codeGenerationService.GenerateProgramCs(
+                request.Models.ConvertAll(m => m.Name),
+                request.IncludeJwtAuthentication
+            );
             generatedFiles.Add("Program.cs", programCsCode);
+
 
             // Generate project file
             var projectFileCode = await _codeGenerationService.GenerateProjectFile("GeneratedApp");
@@ -138,7 +147,9 @@ namespace CrudGenerator.Controllers
     {
         public List<ModelDefinition> Models { get; set; }
         public string ResponseType { get; set; } // "zip" or "text"
-        public List<string> Roles { get; set; } // Add this property for roles
+        public List<string> Roles { get; set; }
+        public bool IncludeJwtAuthentication { get; set; } 
+
 
     }
 

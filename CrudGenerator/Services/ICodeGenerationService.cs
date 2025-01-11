@@ -8,7 +8,7 @@ namespace CrudGenerator.Services
         Task<string> GenerateServiceCode(string modelName);
         Task<string> GenerateControllerCode(string modelName);
         Task<string> GenerateRepositoryCode(string modelName);
-        Task<string> GenerateDbContextCode(List<ModelDefinition> models);
+        Task<string> GenerateDbContextCode(List<ModelDefinition> models, bool includeJwtAuthentication);
 
         // New methods for authentication and authorization code generation
         Task<string> GenerateJwtAuthenticationManagerCode();
@@ -20,7 +20,7 @@ namespace CrudGenerator.Services
         Task<string> GenerateAuthorizationCode(List<string> roles);
 
         // New methods for full application generation
-        Task<string> GenerateProgramCs(List<string> modelNames);
+        Task<string> GenerateProgramCs(List<string> modelNames, bool includeJwtAuthentication);
         Task<string> GenerateProjectFile(string projectName);
         Task<string> GenerateAppSettingsJson();
     }

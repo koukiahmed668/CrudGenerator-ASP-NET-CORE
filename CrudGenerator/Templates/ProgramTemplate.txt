@@ -7,6 +7,7 @@ using MyApp.Services;
 using MyApp.Data;  
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using YourNamespace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,10 +37,16 @@ options.UseMySQL(connectionString)
 
 
 // Register generated services
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 {{ServiceRegistrations}}
 
 // Register generated repositories
 {{RepositoryRegistrations}}
+
+var key = "YourSecretKeyHere"; // Replace with a secure key
+
+builder.Services.AddSingleton(new JwtAuthenticationManager(key));
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 
@@ -59,6 +66,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<JwtMiddleware>(key);
 
 app.MapControllers();
 

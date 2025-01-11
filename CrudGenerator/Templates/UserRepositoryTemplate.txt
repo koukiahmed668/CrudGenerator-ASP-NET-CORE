@@ -1,0 +1,49 @@
+﻿using System.Threading.Tasks;
+using System.Linq;
+using YourNamespace.Data; // Your DbContext namespace
+
+namespace YourNamespace
+{
+    public interface IUserRepository
+    {
+        Task<bool> CreateUserAsync(string username, string password, string[] roles);
+        Task<(string Password, string[] Roles)?> GetUserAsync(string username);
+    }
+
+    public class UserRepository : IUserRepository
+    {
+        private readonly AppDbContext _context;
+
+        public UserRepository(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<bool> CreateUserAsync(string username, string password, string[] roles)
+        {
+            if (_context.Users.Any(u => u.Username == username))
+                return false;
+
+            var user = new User
+            {
+                Username = username,
+                Password = password,
+                Roles = string.Join(",", roles)
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<(string Password, string[] Roles)?> GetUserAsync(string username)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Username == username);
+
+            return user == null 
+                ? null 
+                : (user.Password, user.Roles.Split(','));
+        }
+    }
+}

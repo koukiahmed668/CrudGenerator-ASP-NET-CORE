@@ -1,0 +1,50 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+
+namespace YourNamespace.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AuthController : ControllerBase
+    {
+        private readonly IUserService _userService;
+        private readonly JwtAuthenticationManager _jwtAuthenticationManager;
+
+        public AuthController(IUserService userService, JwtAuthenticationManager jwtAuthenticationManager)
+        {
+            _userService = userService;
+            _jwtAuthenticationManager = jwtAuthenticationManager;
+        }
+
+        [HttpPost("signup")]
+        public async Task<IActionResult> SignUp([FromBody] SignUpRequest request)
+        {
+            var result = await _userService.CreateUserAsync(request.Username, request.Password, request.Roles);
+            if (!result) return BadRequest("User already exists or invalid data.");
+
+            return Ok("User created successfully.");
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            var token = await _jwtAuthenticationManager.Authenticate(request.Username, request.Password, _userService.ValidateUserAsync);
+            if (token == null) return Unauthorized("Invalid credentials.");
+
+            return Ok(new { Token = token });
+        }
+    }
+
+    public class SignUpRequest
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string[] Roles { get; set; }
+    }
+
+    public class LoginRequest
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+    }
+}

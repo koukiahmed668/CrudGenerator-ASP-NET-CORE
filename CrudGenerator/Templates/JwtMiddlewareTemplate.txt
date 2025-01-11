@@ -28,7 +28,7 @@ namespace YourNamespace
             await _next(context);
         }
 
-        private void AttachUserToContext(HttpContext context, string token)
+       private void AttachUserToContext(HttpContext context, string token)
         {
             try
             {
@@ -44,12 +44,16 @@ namespace YourNamespace
 
                 var jwtToken = (JwtSecurityToken)validatedToken;
                 var username = jwtToken.Claims.First(x => x.Type == ClaimTypes.Name).Value;
+                var roles = jwtToken.Claims.Where(x => x.Type == ClaimTypes.Role).Select(x => x.Value).ToList();
+
                 context.Items["User"] = username;
+                context.Items["Roles"] = roles;
             }
             catch
             {
                 // Do nothing if the token is invalid
             }
         }
+
     }
 }

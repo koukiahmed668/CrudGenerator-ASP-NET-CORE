@@ -12,6 +12,10 @@ namespace CrudGenerator.Services
 
         // New methods for authentication and authorization code generation
         Task<string> GenerateJwtAuthenticationManagerCode();
+        Task<string> GenerateJwtAuthenticationControllerCode();
+        Task<string> GenerateUserServiceCode();
+        Task<string> GenerateUserRepositoryCode();
+        Task<string> GenerateUserEntityCode();
         Task<string> GenerateJwtMiddlewareCode();
         Task<string> GenerateAuthorizationCode(List<string> roles);
 

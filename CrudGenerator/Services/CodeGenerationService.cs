@@ -154,6 +154,32 @@ namespace CrudGenerator.Services
             return template;
         }
 
+        public async Task<string> GenerateJwtAuthenticationControllerCode()
+        {
+            var template = await ReadTemplateAsync("JwtAuthenticationControllerTemplate.txt");
+
+            // Customize as necessary; replace placeholders in your template
+            return template;
+        }
+
+        public async Task<string> GenerateUserServiceCode()
+        {
+            var template = await ReadTemplateAsync("userAuth.txt");
+            return template;
+        }
+
+        public async Task<string> GenerateUserRepositoryCode()
+        {
+            var template = await ReadTemplateAsync("UserRepositoryTemplate.txt");
+            return template;
+        }
+
+        public async Task<string> GenerateUserEntityCode()
+        {
+            var template = await ReadTemplateAsync("UserEntityTemplate.txt");
+            return template;
+        }
+
         // Generate authorization code (role-based)
         public async Task<string> GenerateAuthorizationCode(List<string> roles)
         {

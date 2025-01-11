@@ -61,6 +61,10 @@ namespace CrudGenerator.Controllers
             var jwtAuthManagerCode = await _codeGenerationService.GenerateJwtAuthenticationManagerCode();
             generatedFiles.Add("JwtAuthenticationManager.cs", jwtAuthManagerCode);
 
+            // Generate JWT Authentication Controller
+            var jwtAuthControllerCode = await _codeGenerationService.GenerateJwtAuthenticationControllerCode();
+            generatedFiles.Add("JwtAuthenticationController.cs", jwtAuthControllerCode);
+
             // Generate JWT Middleware
             var jwtMiddlewareCode = await _codeGenerationService.GenerateJwtMiddlewareCode();
             generatedFiles.Add("JwtMiddleware.cs", jwtMiddlewareCode);
@@ -69,6 +73,18 @@ namespace CrudGenerator.Controllers
             var roles = request.Roles ?? new List<string> { "User" };  // Default role is User
             var authorizationCode = await _codeGenerationService.GenerateAuthorizationCode(roles);
             generatedFiles.Add("AuthorizationExtensions.cs", authorizationCode);
+
+            // Generate User Service
+            var userServiceCode = await _codeGenerationService.GenerateUserServiceCode();
+            generatedFiles.Add("UserService.cs", userServiceCode);
+
+            // Generate User Repository
+            var userRepositoryCode = await _codeGenerationService.GenerateUserRepositoryCode();
+            generatedFiles.Add("UserRepository.cs", userRepositoryCode);
+
+            // Generate User Entity
+            var userEntityCode = await _codeGenerationService.GenerateUserEntityCode();
+            generatedFiles.Add($"Models/User.cs", userEntityCode);
 
             // Generate Program.cs
             var programCsCode = await _codeGenerationService.GenerateProgramCs(request.Models.ConvertAll(m => m.Name));

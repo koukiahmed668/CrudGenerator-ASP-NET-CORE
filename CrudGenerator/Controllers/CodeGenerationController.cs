@@ -67,7 +67,7 @@ namespace CrudGenerator.Controllers
 
                 // Generate JWT Authentication Controller
                 var jwtAuthControllerCode = await _codeGenerationService.GenerateJwtAuthenticationControllerCode();
-                generatedFiles.Add("JwtAuthenticationController.cs", jwtAuthControllerCode);
+                generatedFiles.Add($"Authentication/JwtAuthenticationController.cs", jwtAuthControllerCode);
 
                 // Generate JWT Middleware
                 var jwtMiddlewareCode = await _codeGenerationService.GenerateJwtMiddlewareCode();

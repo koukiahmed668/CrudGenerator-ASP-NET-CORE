@@ -231,28 +231,28 @@ namespace CrudGenerator.Services
             // Generate JWT authentication section to include in the builder section
             var jwtBuilderSection = includeJwtAuthentication
                 ? @"
-        builder.Services.AddAuthentication(""Bearer"")
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(""YourJWTSecretKey"")),
-                    ValidateIssuer = false,
-                    ValidateAudience = false
-                };
-            });
-        builder.Services.AddAuthorization();
-        var key = ""YourSecretKeyHere""; // Replace with a secure key
-        builder.Services.AddSingleton(new JwtAuthenticationManager(key));"
+                builder.Services.AddAuthentication(""Bearer"")
+                    .AddJwtBearer(options =>
+                    {
+                        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                        {
+                            ValidateIssuerSigningKey = true,
+                            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(""YourJWTSecretKey"")),
+                            ValidateIssuer = false,
+                            ValidateAudience = false
+                        };
+                    });
+                builder.Services.AddAuthorization();
+                var key = ""YourSecretKeyHere""; // Replace with a secure key
+                builder.Services.AddSingleton(new JwtAuthenticationManager(key));"
                 : "";
 
             // Generate JWT middleware section to include after app.Build()
             var jwtMiddlewareSection = includeJwtAuthentication
                 ? @"
-        app.UseAuthentication();
-        app.UseAuthorization();
-        app.UseMiddleware<JwtMiddleware>(key);"
+                app.UseAuthentication();
+                app.UseAuthorization();
+                app.UseMiddleware<JwtMiddleware>(key);"
                 : "";
 
             // Remove `using YourNamespace;` if JWT is not included

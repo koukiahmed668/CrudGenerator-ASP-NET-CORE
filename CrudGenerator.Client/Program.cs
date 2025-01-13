@@ -13,6 +13,8 @@ namespace CrudGenerator.Client
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7286") });
 
+
+
             await builder.Build().RunAsync();
         }
     }

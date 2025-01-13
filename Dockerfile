@@ -26,7 +26,9 @@ EXPOSE 8080
 COPY --from=publish /app/publish . 
 
 # Copy the Blazor client files from the published Blazor app to the wwwroot folder
+# Including _framework directory and all required static assets
 COPY --from=publish /app/client-publish/wwwroot /app/wwwroot
+COPY --from=publish /app/client-publish/wwwroot/_framework /app/wwwroot/_framework
 
 # Entry point for the API
 ENTRYPOINT ["dotnet", "CrudGenerator.dll"]

@@ -19,7 +19,7 @@ namespace CrudGenerator
             {
                 options.AddPolicy("AllowFrontend", policy =>
                 {
-                    policy.WithOrigins("http://localhost:4200") // Specify your frontend's URL
+                    policy.WithOrigins("https://localhost:7222") // Specify your frontend's URL
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });

@@ -1,7 +1,150 @@
 ﻿@page "/"
+@using CrudGenerator.Shared
+@inject HttpClient Http
 
-<PageTitle>Home</PageTitle>
+<h3>Code Generator</h3>
 
-<h1>Hello, world!</h1>
+<EditForm Model="Request" OnValidSubmit="GenerateCode">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
 
-Welcome to your new app.
+    <!-- Models Section -->
+    <div class="mb-3">
+        <h5>Models</h5>
+        @foreach (var model in Request.Models)
+        {
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-title">Model: @model.Name</h6>
+
+                    <!-- Model Attributes -->
+                    <h6>Attributes</h6>
+                    @foreach (var attribute in model.Attributes)
+                    {
+                        <div class="input-group mb-2">
+                            <input class="form-control" placeholder="Attribute Name" @bind="attribute.Name" />
+                            <input class="form-control" placeholder="Attribute Type" @bind="attribute.Type" />
+                            <button class="btn btn-danger" @onclick="() => RemoveAttribute(model, attribute)">Remove</button>
+                        </div>
+                    }
+                    <button class="btn btn-primary" @onclick="() => AddAttribute(model)">Add Attribute</button>
+
+                    <!-- Model Relationships -->
+                    <h6>Relationships</h6>
+                    @foreach (var relationship in model.Relationships)
+                    {
+                        <div class="input-group mb-2">
+                            <input class="form-control" placeholder="Property Name" @bind="relationship.PropertyName" />
+                            <input class="form-control" placeholder="Target Model" @bind="relationship.TargetModel" />
+                            <select class="form-select" @bind="relationship.Type">
+                                <option value="OneToMany">One to Many</option>
+                                <option value="ManyToOne">Many to One</option>
+                                <option value="ManyToMany">Many to Many</option>
+                            </select>
+                            <button class="btn btn-danger" @onclick="() => RemoveRelationship(model, relationship)">Remove</button>
+                        </div>
+                    }
+                    <button class="btn btn-primary" @onclick="() => AddRelationship(model)">Add Relationship</button>
+                </div>
+            </div>
+        }
+        <button class="btn btn-success" @onclick="AddModel">Add Model</button>
+    </div>
+
+    <!-- Response Type Selection -->
+    <div class="mb-3">
+        <label class="form-label">Response Type</label>
+        <select class="form-select" @bind="Request.ResponseType">
+            <option value="zip">Zip</option>
+            <option value="text">Text</option>
+        </select>
+    </div>
+
+    <!-- JWT Authentication -->
+    <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="includeJwt" @bind="Request.IncludeJwtAuthentication" />
+        <label class="form-check-label" for="includeJwt">Include JWT Authentication</label>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary">Generate Code</button>
+</EditForm>
+
+@if (GeneratedFiles.Any())
+{
+    <h4>Generated Files</h4>
+    <ul>
+        @foreach (var file in GeneratedFiles)
+        {
+            <li><a href="data:application/zip;base64,@file.Value" download="@file.Key">@file.Key</a></li>
+        }
+    </ul>
+}
+
+@code {
+    private CodeGenerationRequest Request { get; set; } = new CodeGenerationRequest
+        {
+            Models = new List<ModelDefinition>(),
+            ResponseType = "zip",
+            IncludeJwtAuthentication = false
+        };
+
+    private Dictionary<string, string> GeneratedFiles = new();
+
+    private async Task GenerateCode()
+    {
+        var response = await Http.PostAsJsonAsync("api/CodeGeneration/generate", Request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            if (Request.ResponseType == "text")
+            {
+                GeneratedFiles = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+            }
+            else
+            {
+                var zipBytes = await response.Content.ReadAsByteArrayAsync();
+                GeneratedFiles.Add("GeneratedCode.zip", Convert.ToBase64String(zipBytes));
+            }
+        }
+        else
+        {
+            Console.WriteLine("Error generating code");
+        }
+    }
+
+    private void AddModel()
+    {
+        Request.Models.Add(new ModelDefinition
+            {
+                Name = $"Model{Request.Models.Count + 1}",
+                Attributes = new List<AttributeDefinition>(),
+                Relationships = new List<Relationship>()
+            });
+    }
+
+    private void AddAttribute(ModelDefinition model)
+    {
+        model.Attributes.Add(new AttributeDefinition { Name = "", Type = "" });
+    }
+
+    private void RemoveAttribute(ModelDefinition model, AttributeDefinition attribute)
+    {
+        model.Attributes.Remove(attribute);
+    }
+
+    private void AddRelationship(ModelDefinition model)
+    {
+        model.Relationships.Add(new Relationship
+            {
+                PropertyName = "",
+                TargetModel = "",
+                Type = RelationshipType.OneToMany
+            });
+    }
+
+    private void RemoveRelationship(ModelDefinition model, Relationship relationship)
+    {
+        model.Relationships.Remove(relationship);
+    }
+}

@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrudGenerator", "CrudGenerator\CrudGenerator.csproj", "{CE2E86B0-713A-404F-93A8-51D70CC25589}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrudGenerator", "CrudGenerator\CrudGenerator.csproj", "{CE2E86B0-713A-404F-93A8-51D70CC25589}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrudGenerator.Client", "CrudGenerator.Client\CrudGenerator.Client.csproj", "{841C4079-298B-4963-8FAB-00AAECA06522}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrudGenerator.Shared", "CrudGenerator.Shared\CrudGenerator.Shared.csproj", "{210E0512-E0E6-44CE-AD2B-666C4A87099E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{CE2E86B0-713A-404F-93A8-51D70CC25589}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CE2E86B0-713A-404F-93A8-51D70CC25589}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CE2E86B0-713A-404F-93A8-51D70CC25589}.Release|Any CPU.Build.0 = Release|Any CPU
+		{841C4079-298B-4963-8FAB-00AAECA06522}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{841C4079-298B-4963-8FAB-00AAECA06522}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{841C4079-298B-4963-8FAB-00AAECA06522}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{841C4079-298B-4963-8FAB-00AAECA06522}.Release|Any CPU.Build.0 = Release|Any CPU
+		{210E0512-E0E6-44CE-AD2B-666C4A87099E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{210E0512-E0E6-44CE-AD2B-666C4A87099E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{210E0512-E0E6-44CE-AD2B-666C4A87099E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{210E0512-E0E6-44CE-AD2B-666C4A87099E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

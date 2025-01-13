@@ -15,4 +15,12 @@
 		<None Include="Templates\**\*" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\CrudGenerator.Shared\CrudGenerator.Shared.csproj" />
+	</ItemGroup>
+	
 </Project>

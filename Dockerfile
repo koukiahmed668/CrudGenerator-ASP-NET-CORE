@@ -10,28 +10,61 @@ ENV DOTNET_RUNNING_IN_CONTAINER=true
 WORKDIR /app
 
 # Copy the solution file into the container
-COPY CrudGenerator.sln ./ 
+COPY CrudGenerator.sln ./
 
-# Copy the entire source directory into the container
+# Copy the source directories into the container
 COPY CrudGenerator/ ./CrudGenerator/
+COPY CrudGenerator.Client/ ./CrudGenerator.Client/
+COPY CrudGenerator.Shared/ ./CrudGenerator.Shared/
 
-# Restore dependencies (this will restore based on the solution file)
+# Restore dependencies
 RUN dotnet restore "CrudGenerator.sln"
 
-# Build the application
+# Build the entire solution
 RUN dotnet build "CrudGenerator.sln" -c $BUILD_CONFIGURATION -o /app/build
 
-# Publish the application
+# Publish the server application
 FROM build AS publish
-RUN dotnet publish "CrudGenerator.sln" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "CrudGenerator/CrudGenerator.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# Use the .NET runtime image for the final container
+# Use the .NET runtime image for the server
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 8080
 
-# Copy the published application from the build image
+# Copy the published server application from the build image
 COPY --from=publish /app/publish .
 
-# Define the entry point
+# Define the entry point for the server
+ENTRYPOINT ["dotnet", "CrudGenerator.dll"]
+
+# Additional stage for the Blazor Client
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS client-build
+ARG BUILD_CONFIGURATION=Release
+
+# Set the working directory for the client build
+WORKDIR /app
+
+# Copy the solution file and source directories for the client and shared projects
+COPY CrudGenerator.sln ./
+COPY CrudGenerator.Client/ ./CrudGenerator.Client/
+COPY CrudGenerator.Shared/ ./CrudGenerator.Shared/
+
+# Restore dependencies for the client project
+RUN dotnet restore "CrudGenerator.Client/CrudGenerator.Client.csproj"
+
+# Build and publish the Blazor WebAssembly application
+RUN dotnet publish "CrudGenerator.Client/CrudGenerator.Client.csproj" -c $BUILD_CONFIGURATION -o /app/client-dist
+
+# Final stage for combining client and server
+FROM base AS final
+WORKDIR /app
+
+# Copy the server app files from the previous stage
+COPY --from=publish /app/publish .
+
+# Copy the client app files from the client build stage
+COPY --from=client-build /app/client-dist ./wwwroot
+
+# Define the entry point for the server
 ENTRYPOINT ["dotnet", "CrudGenerator.dll"]

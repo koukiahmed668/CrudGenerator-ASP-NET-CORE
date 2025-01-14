@@ -1,20 +1,36 @@
-﻿
+﻿/* General Dark Mode Styles */
 
-.code-generator-title {
-    font-size: 2rem; /* Adjust font size */
-    font-weight: bold; /* Make title bold */
-    color: #007bff; /* Blue color for the title */
-    text-align: center; /* Center-align the title */
-    margin-bottom: 20px; /* Space below the title */
+.main-container {
+    background-color: #1E1E1E; /* Dark background for the entire content */
+    color: #E0E0E0; /* Light text for better contrast */
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Subtle shadow for better visibility */
+    max-width: auto;
+    min-height: 100vh;
+    margin: 0px auto; /* Center the container */
 }
 
 
+body, .container {
+    background-color: #121212; /* Dark background for body */
+    color: #E0E0E0; /* Light text color for contrast */
+}
+
+/* Title Styles */
+.code-generator-title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #BB86FC; /* Purple for title */
+    text-align: center;
+    margin-bottom: 20px;
+}
+
 /* Main Container */
 .form-container {
-    background-color: #ffffff;
+    background-color: #1F1B24; /* Dark container background */
     padding: 30px;
     border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     max-width: 900px;
     width: 100%;
     transition: transform 0.3s ease-in-out;
@@ -24,13 +40,21 @@
         transform: scale(1.02);
     }
 
-
 /* Heading Styles */
 h3 {
     font-size: 2.5rem;
-    color: #1b6ec2;
+    color: #03DAC6; /* Light cyan color for headings */
     margin-bottom: 30px;
 }
+
+.models-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #BB86FC; /* Purple color for the title */
+    text-align: left; /* Align to the left */
+    margin-bottom: 15px; /* Space below the title */
+}
+
 
 /* Form Layout */
 form {
@@ -40,19 +64,19 @@ form {
     align-items: center;
 }
 
-
-
 /* Input and Select styling */
 input, select {
     padding: 6px;
     border-radius: 8px;
-    border: 1px solid #ddd;
+    border: 1px solid #333;
+    background-color: #333; /* Dark background for inputs */
+    color: #E0E0E0; /* Light text for inputs */
     transition: border-color 0.3s ease;
 }
 
     input:focus, select:focus {
         outline: none;
-        border-color: #1b6ec2;
+        border-color: #BB86FC; /* Purple border on focus */
     }
 
 /* Validation and Errors */
@@ -61,14 +85,13 @@ input, select {
     font-size: 0.9rem;
 }
 
-
 /* Card Styling */
 .card {
     width: 100%;
-    background-color: #fff;
+    background-color: #1F1B24; /* Dark background for cards */
     margin-bottom: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     padding: 20px;
     transition: transform 0.2s ease;
 }
@@ -79,7 +102,7 @@ input, select {
 
 .card-body {
     padding: 20px;
-    background-color: #fafafa;
+    background-color: #2C2C2C; /* Slightly lighter background for card body */
     border-radius: 8px;
 }
 
@@ -92,7 +115,7 @@ input, select {
 
 .card-body h6 {
     font-size: 1rem;
-    color: #555;
+    color: #B0B0B0; /* Lighter color for card body text */
 }
 
 /* Buttons for Add/Remove operations */
@@ -100,25 +123,33 @@ input, select {
     border-radius: 6px;
     padding: 8px;
     margin-right: 5px;
-    border: 1px solid #ccc;
+    border: 1px solid #444;
 }
 
-.input-group button {
-    padding: 8px 15px;
-    background-color: #007bff;
+.regular-button {
+    margin-bottom: 10px;
+    background-color: #9B4DFF; /* Purple button color */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+    .regular-button:hover {
+        background-color: #BB86FC; /* Lighter purple on hover */
+    }
+
+.generate-button {
+    margin-bottom: 10px;
+    background-color: #9B4DFF; /* Purple button color */
     color: white;
     border: none;
     border-radius: 6px;
     font-size: 1rem;
 }
 
-    .input-group button:hover {
-        background-color: #0056b3;
+    .generate-button:hover {
+        background-color: #BB86FC; /* Lighter purple on hover */
     }
-
-
-
-
 
 /* Generated Files Section */
 ul {
@@ -133,13 +164,13 @@ ul {
     }
 
         ul li a {
-            color: #0071c1;
+            color: #BB86FC;
             text-decoration: none;
             font-weight: bold;
         }
 
             ul li a:hover {
-                color: #005a8c;
+                color: #9B4DFF; /* Hover color for links */
             }
 
 /* Responsive Layout */
@@ -180,4 +211,3 @@ ul {
         margin: 10px;
     }
 }
-

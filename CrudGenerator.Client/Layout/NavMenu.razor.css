@@ -11,6 +11,15 @@
     font-size: 1.1rem;
 }
 
+/* GitHub logo styling */
+.github-logo {
+    margin-right: 10px; /* Increase space between logo and text */
+    width: 20px;
+    height: 20px;
+    fill: #E0E0E0; /* Match the link text color */
+}
+
+
 .bi {
     display: inline-block;
     position: relative;

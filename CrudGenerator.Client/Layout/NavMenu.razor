@@ -9,13 +9,26 @@
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="flex-column">
+        <!-- Home Link -->
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="home" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
             </NavLink>
         </div>
+
+        <!-- GitHub Link -->
+        <div class="nav-item px-3">
+            <a href="https://github.com/koukiahmed668/CrudGenerator-ASP-NET-CORE" target="_blank" class="nav-link github-link">
+                <!-- GitHub SVG Logo -->
+                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" class="github-logo">
+                    <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.89 8.16 6.84 9.49.5.09.68-.22.68-.48 0-.24-.01-.87-.01-1.71-2.79.61-3.37-1.35-3.37-1.35-.45-1.13-1.1-1.43-1.1-1.43-.9-.61.07-.6.07-.6 1.01.07 1.54 1.04 1.54 1.04.89 1.52 2.34 1.08 2.91.83.09-.64.35-1.08.64-1.33-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.97 1.03-2.66-.1-.25-.45-1.26.1-2.62 0 0 .83-.27 2.73 1.01A9.727 9.727 0 0 1 12 5c.85 0 1.7.11 2.5.31 1.9-1.29 2.73-1.01 2.73-1.01.56 1.36.2 2.37.1 2.62.64.7 1.03 1.57 1.03 2.66 0 3.83-2.34 4.69-4.56 4.94.36.32.69.94.69 1.89 0 1.36-.01 2.46-.01 2.79 0 .27.18.57.69.47C21.11 20.16 24 16.42 24 12c0-5.52-4.48-10-10-10z" />
+                </svg>
+                View on GitHub
+            </a>
+        </div>
     </nav>
 </div>
+
 
 @code {
     private bool collapseNavMenu = true;

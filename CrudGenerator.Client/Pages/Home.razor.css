@@ -11,6 +11,8 @@
 }
 
 
+
+
 body, .container {
     background-color: #121212; /* Dark background for body */
     color: #E0E0E0; /* Light text color for contrast */
@@ -195,6 +197,8 @@ ul {
     button {
         width: 100%;
     }
+
+   
 }
 
 @media (max-width: 500px) {
@@ -210,4 +214,6 @@ ul {
         padding: 15px;
         margin: 10px;
     }
+
+   
 }

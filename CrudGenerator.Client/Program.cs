@@ -11,13 +11,14 @@ namespace CrudGenerator.Client
             builder.RootComponents.Add<App>("#app");
             builder.RootComponents.Add<HeadOutlet>("head::after");
 
-            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7286") });
+            var baseAddress = builder.HostEnvironment.IsDevelopment()
+                ? new Uri("https://localhost:7286")
+                : new Uri("https://crudgenerator-asp-net-core.onrender.com");
+
+            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = baseAddress });
 
             AppContext.SetSwitch("System.Globalization.PredefinedCulturesOnly", false);
             AppContext.SetSwitch("System.Globalization.EnableIcu", true);
-
-
-
 
             await builder.Build().RunAsync();
         }

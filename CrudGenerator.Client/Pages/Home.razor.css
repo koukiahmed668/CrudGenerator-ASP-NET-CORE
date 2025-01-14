@@ -1,0 +1,183 @@
+﻿
+
+.code-generator-title {
+    font-size: 2rem; /* Adjust font size */
+    font-weight: bold; /* Make title bold */
+    color: #007bff; /* Blue color for the title */
+    text-align: center; /* Center-align the title */
+    margin-bottom: 20px; /* Space below the title */
+}
+
+
+/* Main Container */
+.form-container {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 900px;
+    width: 100%;
+    transition: transform 0.3s ease-in-out;
+}
+
+    .form-container:hover {
+        transform: scale(1.02);
+    }
+
+
+/* Heading Styles */
+h3 {
+    font-size: 2.5rem;
+    color: #1b6ec2;
+    margin-bottom: 30px;
+}
+
+/* Form Layout */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    align-items: center;
+}
+
+
+
+/* Input and Select styling */
+input, select {
+    padding: 6px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    transition: border-color 0.3s ease;
+}
+
+    input:focus, select:focus {
+        outline: none;
+        border-color: #1b6ec2;
+    }
+
+/* Validation and Errors */
+.validation-message {
+    color: red;
+    font-size: 0.9rem;
+}
+
+
+/* Card Styling */
+.card {
+    width: 100%;
+    background-color: #fff;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: transform 0.2s ease;
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+.card-body {
+    padding: 20px;
+    background-color: #fafafa;
+    border-radius: 8px;
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+}
+
+.card-body h6 {
+    font-size: 1rem;
+    color: #555;
+}
+
+/* Buttons for Add/Remove operations */
+.input-group input, .input-group select {
+    border-radius: 6px;
+    padding: 8px;
+    margin-right: 5px;
+    border: 1px solid #ccc;
+}
+
+.input-group button {
+    padding: 8px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+    .input-group button:hover {
+        background-color: #0056b3;
+    }
+
+
+
+
+
+/* Generated Files Section */
+ul {
+    padding-left: 20px;
+    list-style: none;
+    margin: 20px 0;
+}
+
+    ul li {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
+
+        ul li a {
+            color: #0071c1;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+            ul li a:hover {
+                color: #005a8c;
+            }
+
+/* Responsive Layout */
+@media (max-width: 768px) {
+    .form-container {
+        padding: 20px;
+        width: 100%;
+    }
+
+    h3 {
+        font-size: 1.8rem;
+    }
+
+    .card-title {
+        font-size: 1rem;
+    }
+
+    .input-group input, .input-group select {
+        width: 100%;
+    }
+
+    button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 500px) {
+    h3 {
+        font-size: 1.5rem;
+    }
+
+    .card-title {
+        font-size: 0.9rem;
+    }
+
+    .form-container {
+        padding: 15px;
+        margin: 10px;
+    }
+}
+

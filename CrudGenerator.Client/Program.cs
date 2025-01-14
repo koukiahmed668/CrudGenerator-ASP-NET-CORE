@@ -13,6 +13,10 @@ namespace CrudGenerator.Client
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7286") });
 
+            AppContext.SetSwitch("System.Globalization.PredefinedCulturesOnly", false);
+            AppContext.SetSwitch("System.Globalization.EnableIcu", true);
+
+
 
 
             await builder.Build().RunAsync();

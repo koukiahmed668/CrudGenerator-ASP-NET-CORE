@@ -16,7 +16,7 @@ namespace CrudGenerator
             {
                 options.AddPolicy("AllowFrontend", policy =>
                 {
-                    policy.WithOrigins("https://crudgenerator-asp-net-core.onrender.com") // Update with your Blazor frontend URL
+                    policy.WithOrigins("https://localhost:7222") // Update with your Blazor frontend URL
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });
@@ -43,6 +43,13 @@ namespace CrudGenerator
 
             app.UseHttpsRedirection();
             app.UseAuthorization();
+
+            app.UseDefaultFiles()
+             .UseStaticFiles(new StaticFileOptions
+             {
+                 ServeUnknownFileTypes = true
+             })
+             .UseRouting();
 
             // Add fallback for Blazor routing (handle routes like /home, /about, etc.)
             app.MapFallbackToFile("index.html");  // This ensures Blazor WebAssembly routing works

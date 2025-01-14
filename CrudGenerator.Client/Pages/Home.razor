@@ -2,97 +2,149 @@
 @using CrudGenerator.Shared
 @inject HttpClient Http
 
-<h3>Code Generator</h3>
+<div class="code-generator-title">Crud Generator for ASP NET CORE</div>
 
-<EditForm Model="Request" OnValidSubmit="GenerateCode">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+<div class="container mt-4">
+    <EditForm Model="Request" OnValidSubmit="GenerateCode">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-    <!-- Models Section -->
-    <div class="mb-3">
-        <h5>Models</h5>
-        @foreach (var model in Request.Models)
-        {
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h6 class="card-title">Model: @model.Name</h6>
+        <!-- Models Section -->
+        <div class="mb-3">
+            <h5>Models</h5>
+            @foreach (var model in Request.Models)
+            {
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title d-flex justify-content-between">
+                            Model:
+                            <input class="form-control w-50" placeholder="Model Name" @bind="model.Name" />
+                            <button class="btn btn-danger" @onclick="() => RemoveModel(model)">Remove Model</button>
+                        </h6>
 
-                    <!-- Model Attributes -->
-                    <h6>Attributes</h6>
-                    @foreach (var attribute in model.Attributes)
-                    {
-                        <div class="input-group mb-2">
-                            <input class="form-control" placeholder="Attribute Name" @bind="attribute.Name" />
-                            <input class="form-control" placeholder="Attribute Type" @bind="attribute.Type" />
-                            <button class="btn btn-danger" @onclick="() => RemoveAttribute(model, attribute)">Remove</button>
-                        </div>
-                    }
-                    <button class="btn btn-primary" @onclick="() => AddAttribute(model)">Add Attribute</button>
+                        <!-- Model Attributes -->
+                        <h6>Attributes</h6>
+                        @foreach (var attribute in model.Attributes)
+                        {
+                            <div class="input-group mb-2">
+                                <input class="form-control" placeholder="Attribute Name" @bind="attribute.Name" />
+                                <select class="form-select" @bind="attribute.Type">
+                                    <option value="string">String</option>
+                                    <option value="int">Int</option>
+                                    <option value="DateTime">DateTime</option>
+                                    <option value="bool">Bool</option>
+                                    <option value="decimal">Decimal</option>
+                                    <option value="Guid">Guid</option>
+                                    <option value="float">Float</option>
+                                    <option value="double">Double</option>
+                                </select>
+                                <button class="btn btn-danger" @onclick="() => RemoveAttribute(model, attribute)">Remove</button>
+                            </div>
+                        }
+                        <button class="btn btn-primary mb-2" @onclick="() => AddAttribute(model)">Add Attribute</button>
 
-                    <!-- Model Relationships -->
-                    <h6>Relationships</h6>
-                    @foreach (var relationship in model.Relationships)
-                    {
-                        <div class="input-group mb-2">
-                            <input class="form-control" placeholder="Property Name" @bind="relationship.PropertyName" />
-                            <input class="form-control" placeholder="Target Model" @bind="relationship.TargetModel" />
-                            <select class="form-select" @bind="relationship.Type">
-                                <option value="OneToMany">One to Many</option>
-                                <option value="ManyToOne">Many to One</option>
-                                <option value="ManyToMany">Many to Many</option>
-                            </select>
-                            <button class="btn btn-danger" @onclick="() => RemoveRelationship(model, relationship)">Remove</button>
-                        </div>
-                    }
-                    <button class="btn btn-primary" @onclick="() => AddRelationship(model)">Add Relationship</button>
+                        <!-- Model Relationships -->
+                        <h6>Relationships</h6>
+                        @foreach (var relationship in model.Relationships)
+                        {
+                            <div class="input-group mb-2">
+                                <input class="form-control" placeholder="Property Name" @bind="relationship.PropertyName" />
+                                <input class="form-control" placeholder="Target Model" @bind="relationship.TargetModel" />
+                                <select class="form-select" @bind="relationship.Type">
+                                    <option value="OneToMany">One to Many</option>
+                                    <option value="ManyToOne">Many to One</option>
+                                    <option value="ManyToMany">Many to Many</option>
+                                </select>
+                                <button class="btn btn-danger" @onclick="() => RemoveRelationship(model, relationship)">Remove</button>
+                            </div>
+                        }
+                        <button class="btn btn-primary mb-2" @onclick="() => AddRelationship(model)">Add Relationship</button>
+                    </div>
                 </div>
-            </div>
-        }
-        <button class="btn btn-success" @onclick="AddModel">Add Model</button>
-    </div>
+            }
+            <button class="btn btn-success mb-3" @onclick="AddModel">Add Model</button>
+        </div>
 
-    <!-- Response Type Selection -->
-    <div class="mb-3">
-        <label class="form-label">Response Type</label>
-        <select class="form-select" @bind="Request.ResponseType">
-            <option value="zip">Zip</option>
-            <option value="text">Text</option>
-        </select>
-    </div>
+        <!-- Response Type Selection -->
+        <div class="mb-3">
+            <label class="form-label">Response Type</label>
+            <select class="form-select" @bind="Request.ResponseType">
+                <option value="zip">Zip</option>
+                <option value="text">Text</option>
+            </select>
+        </div>
 
-    <!-- JWT Authentication -->
-    <div class="mb-3 form-check">
-        <input type="checkbox" class="form-check-input" id="includeJwt" @bind="Request.IncludeJwtAuthentication" />
-        <label class="form-check-label" for="includeJwt">Include JWT Authentication</label>
-    </div>
+        <!-- JWT Authentication -->
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="includeJwt" @bind="Request.IncludeJwtAuthentication" />
+            <label class="form-check-label" for="includeJwt">Include JWT Authentication</label>
+        </div>
 
-    <!-- Submit Button -->
-    <button type="submit" class="btn btn-primary">Generate Code</button>
-</EditForm>
+        <!-- Roles Section -->
+        <div class="mb-3">
+            <label class="form-label">Roles</label>
+            <input class="form-control" placeholder="Comma-separated roles" @bind="RolesString" />
+            <small class="form-text text-muted">Enter roles like 'Admin, User'.</small>
+        </div>
 
-@if (GeneratedFiles.Any())
-{
-    <h4>Generated Files</h4>
-    <ul>
-        @foreach (var file in GeneratedFiles)
-        {
-            <li><a href="data:application/zip;base64,@file.Value" download="@file.Key">@file.Key</a></li>
-        }
-    </ul>
-}
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary">Generate Code</button>
+    </EditForm>
+
+    @if (GeneratedFiles.Any())
+    {
+        <h4>Generated Files</h4>
+        <ul class="list-group">
+            @foreach (var file in GeneratedFiles)
+            {
+                <li class="list-group-item">
+                    <a href="data:application/zip;base64,@file.Value" download="@file.Key">@file.Key</a>
+                </li>
+            }
+        </ul>
+    }
+</div>
 
 @code {
     private CodeGenerationRequest Request { get; set; } = new CodeGenerationRequest
         {
-            Models = new List<ModelDefinition>(),
+            Models = new List<ModelDefinition> { new ModelDefinition { Name = "Model1", Attributes = new List<AttributeDefinition>(), Relationships = new List<Relationship>() } },
             ResponseType = "zip",
-            IncludeJwtAuthentication = false
+            IncludeJwtAuthentication = false,
+            Roles = new List<string>()
         };
+
+    // Temporary string to bind to input field
+    private string RolesString
+    {
+        get => string.Join(", ", Request.Roles);
+        set => Request.Roles = value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                      .Select(role => role.Trim())
+                                      .ToList();
+    }
 
     private Dictionary<string, string> GeneratedFiles = new();
 
     private async Task GenerateCode()
     {
+        // Ensure models list is not null or empty
+        if (Request.Models == null || !Request.Models.Any())
+        {
+            Console.WriteLine("Please add at least one model.");
+            return;
+        }
+
+        // Ensure roles are set
+        if (string.IsNullOrWhiteSpace(RolesString))
+        {
+            Console.WriteLine("Please enter at least one role.");
+            return;
+        }
+
+        Request.Roles = RolesString.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                    .Select(role => role.Trim())
+                                    .ToList();
+
         var response = await Http.PostAsJsonAsync("api/CodeGeneration/generate", Request);
 
         if (response.IsSuccessStatusCode)
@@ -117,15 +169,20 @@
     {
         Request.Models.Add(new ModelDefinition
             {
-                Name = $"Model{Request.Models.Count + 1}",
-                Attributes = new List<AttributeDefinition>(),
-                Relationships = new List<Relationship>()
+                Name = "New Model",  // Default name to be editable
+                Attributes = new List<AttributeDefinition>(),  // Initialize attributes list
+                Relationships = new List<Relationship>()  // Initialize relationships list
             });
+    }
+
+    private void RemoveModel(ModelDefinition model)
+    {
+        Request.Models.Remove(model);
     }
 
     private void AddAttribute(ModelDefinition model)
     {
-        model.Attributes.Add(new AttributeDefinition { Name = "", Type = "" });
+        model.Attributes.Add(new AttributeDefinition { Name = "", Type = "string" }); // Default type is string
     }
 
     private void RemoveAttribute(ModelDefinition model, AttributeDefinition attribute)

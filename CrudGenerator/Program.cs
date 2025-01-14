@@ -1,4 +1,9 @@
+using CrudGenerator.Data;
 using CrudGenerator.Services;
+using System;
+using Microsoft.EntityFrameworkCore;
+
+
 
 namespace CrudGenerator
 {
@@ -8,8 +13,17 @@ namespace CrudGenerator
         {
             var builder = WebApplication.CreateBuilder(args);
 
+
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseMySQL(connectionString)
+            );
+
+
+
             // Add services to the container
             builder.Services.AddScoped<ICodeGenerationService, CodeGenerationService>();
+            builder.Services.AddScoped<IUsageLogService, UsageLogService>();
 
             // Configure CORS to allow requests from the Blazor client
             builder.Services.AddCors(options =>

@@ -1,4 +1,6 @@
-﻿using CrudGenerator.Services;
+﻿using CrudGenerator.Data;
+using CrudGenerator.Models;
+using CrudGenerator.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -15,17 +17,36 @@ namespace CrudGenerator.Controllers
     public class CodeGenerationController : ControllerBase
     {
         private readonly ICodeGenerationService _codeGenerationService;
+        private readonly IUsageLogService _usageLogService;
+        private readonly AppDbContext _context;
 
-        public CodeGenerationController(ICodeGenerationService codeGenerationService)
+        public CodeGenerationController(ICodeGenerationService codeGenerationService, IUsageLogService usageLogService, AppDbContext context)
         {
             _codeGenerationService = codeGenerationService;
+            _usageLogService = usageLogService;
+            _context = context;
         }
+
+
 
         // Endpoint to generate code
         [HttpPost("generate")]
         public async Task<IActionResult> GenerateCode([FromBody] CodeGenerationRequest request)
         {
             var generatedFiles = new Dictionary<string, string>();
+
+            // Log usage info before code generation
+            var usageLog = new UsageLog
+            {
+                UserIp = HttpContext.Connection.RemoteIpAddress?.ToString(),
+                Timestamp = DateTime.UtcNow,
+                GeneratedModels = request.Models.Select(m => m.Name).ToList(),
+                ResponseType = request.ResponseType,
+                Roles = request.Roles,
+                JwtIncluded = request.IncludeJwtAuthentication
+            };
+
+            await _usageLogService.LogUsageAsync(usageLog);
 
             foreach (var model in request.Models)
             {
@@ -141,6 +162,9 @@ namespace CrudGenerator.Controllers
         }
 
     }
+
+
+   
 
     // Request model for code generation
     public class CodeGenerationRequest

@@ -35,18 +35,7 @@ namespace CrudGenerator.Controllers
         {
             var generatedFiles = new Dictionary<string, string>();
 
-            // Log usage info before code generation
-            var usageLog = new UsageLog
-            {
-                UserIp = HttpContext.Connection.RemoteIpAddress?.ToString(),
-                Timestamp = DateTime.UtcNow,
-                GeneratedModels = request.Models.Select(m => m.Name).ToList(),
-                ResponseType = request.ResponseType,
-                Roles = request.Roles,
-                JwtIncluded = request.IncludeJwtAuthentication
-            };
-
-            await _usageLogService.LogUsageAsync(usageLog);
+           
 
             foreach (var model in request.Models)
             {

@@ -30,10 +30,5 @@ COPY --from=publish /app/publish .
 COPY --from=publish /app/client-publish/wwwroot /app/wwwroot
 COPY --from=publish /app/client-publish/wwwroot/_framework /app/wwwroot/_framework
 
-# Run database migrations (dotnet ef database update)
-WORKDIR /app/CrudGenerator
-RUN dotnet ef database update --no-build --configuration Release
-
-
 # Entry point for the API
 ENTRYPOINT ["dotnet", "CrudGenerator.dll"]

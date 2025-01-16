@@ -1,69 +1,67 @@
 ﻿/* General Dark Mode Styles */
-
 .main-container {
-    background-color: #1E1E1E; /* Dark background for the entire content */
-    color: #E0E0E0; /* Light text for better contrast */
+    background-color: #1E1E1E;
+    color: #E0E0E0;
     padding: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Subtle shadow for better visibility */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     max-width: auto;
     min-height: 100vh;
-    margin: 0px auto; /* Center the container */
+    margin: 0px auto;
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-
-
-
-body, .container {
-    background-color: #121212; /* Dark background for body */
-    color: #E0E0E0; /* Light text color for contrast */
-}
-
-/* Title Styles */
-.code-generator-title {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #BB86FC; /* Purple for title */
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-/* Main Container */
-.form-container {
-    background-color: #1F1B24; /* Dark container background */
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    max-width: 900px;
-    width: 100%;
-    transition: transform 0.3s ease-in-out;
-}
-
-    .form-container:hover {
-        transform: scale(1.02);
+    .main-container:hover {
+        transform: scale(1.005); /* Slight zoom effect */
     }
 
-/* Heading Styles */
+body, .container {
+    background-color: #121212;
+    color: #E0E0E0;
+    transition: background-color 0.3s ease;
+}
+
 h3 {
     font-size: 2.5rem;
-    color: #03DAC6; /* Light cyan color for headings */
+    color: #03DAC6;
     margin-bottom: 30px;
+    transition: color 0.3s ease;
+}
+
+.code-generator-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #BB86FC;
+    text-align: center;
+    margin-bottom: 20px;
+    transition: color 0.3s ease;
 }
 
 .models-title {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #BB86FC; /* Purple color for the title */
-    text-align: left; /* Align to the left */
-    margin-bottom: 15px; /* Space below the title */
+    color: #BB86FC;
+    text-align: left;
+    margin-bottom: 15px;
 }
 
-
-/* Form Layout */
+/* Add some animation for form layout */
 form {
     display: flex;
     flex-direction: column;
     gap: 25px;
     align-items: center;
+    opacity: 0;
+    animation: fadeIn 1s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
 /* Input and Select styling */
@@ -71,86 +69,87 @@ input, select {
     padding: 6px;
     border-radius: 8px;
     border: 1px solid #333;
-    background-color: #333; /* Dark background for inputs */
-    color: #E0E0E0; /* Light text for inputs */
-    transition: border-color 0.3s ease;
+    background-color: #333;
+    color: #E0E0E0;
+    transition: all 0.3s ease;
 }
 
     input:focus, select:focus {
         outline: none;
-        border-color: #BB86FC; /* Purple border on focus */
+        border-color: #BB86FC;
+        box-shadow: 0 0 5px rgba(187, 134, 252, 0.8); /* Glow effect */
     }
-
-/* Validation and Errors */
-.validation-message {
-    color: red;
-    font-size: 0.9rem;
-}
 
 /* Card Styling */
 .card {
     width: 100%;
-    background-color: #1F1B24; /* Dark background for cards */
+    background-color: #1F1B24;
     margin-bottom: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     padding: 20px;
-    transition: transform 0.2s ease;
+    transition: all 0.3s ease, transform 0.2s ease;
 }
 
     .card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-10px); /* Slight lift effect */
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
     }
 
+/* Hover effect on card body */
 .card-body {
     padding: 20px;
-    background-color: #2C2C2C; /* Slightly lighter background for card body */
+    background-color: #2C2C2C;
     border-radius: 8px;
+    transition: background-color 0.3s ease;
 }
 
-.card-title {
-    font-size: 1.2rem;
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-}
-
-.card-body h6 {
-    font-size: 1rem;
-    color: #B0B0B0; /* Lighter color for card body text */
-}
-
-/* Buttons for Add/Remove operations */
-.input-group input, .input-group select {
-    border-radius: 6px;
-    padding: 8px;
-    margin-right: 5px;
-    border: 1px solid #444;
-}
-
-.regular-button {
-    margin-bottom: 10px;
-    background-color: #9B4DFF; /* Purple button color */
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-}
-    .regular-button:hover {
-        background-color: #BB86FC; /* Lighter purple on hover */
+    .card-body:hover {
+        background-color: #333; /* Lighter shade on hover */
     }
 
-.generate-button {
+/* Buttons for Add/Remove operations */
+.regular-button {
     margin-bottom: 10px;
-    background-color: #9B4DFF; /* Purple button color */
+    background-color: #9B4DFF;
     color: white;
     border: none;
     border-radius: 6px;
     font-size: 1rem;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+    .regular-button:hover {
+        background-color: #BB86FC;
+        transform: translateY(-2px); /* Slight button lift */
+    }
+
+    .regular-button:active {
+        transform: translateY(0); /* Click effect */
+    }
+
+/* Submit Button */
+.generate-button {
+    margin-bottom: 10px;
+    background-color: #9B4DFF;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
     .generate-button:hover {
-        background-color: #BB86FC; /* Lighter purple on hover */
+        background-color: #BB86FC;
+        transform: translateY(-2px); /* Slight lift effect */
+    }
+
+    .generate-button:active {
+        transform: translateY(0); /* Click effect */
     }
 
 /* Generated Files Section */
@@ -158,22 +157,46 @@ ul {
     padding-left: 20px;
     list-style: none;
     margin: 20px 0;
+    transition: all 0.3s ease;
 }
 
     ul li {
         font-size: 1.1rem;
         margin-bottom: 10px;
+        opacity: 0;
+        animation: slideIn 0.5s ease-out forwards;
     }
 
         ul li a {
             color: #BB86FC;
             text-decoration: none;
             font-weight: bold;
+            transition: color 0.3s ease;
         }
 
             ul li a:hover {
-                color: #9B4DFF; /* Hover color for links */
+                color: #9B4DFF;
             }
+
+/* Animation for file list */
+@keyframes slideIn {
+    0% {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Form Validation */
+.validation-message {
+    color: red;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
 
 /* Responsive Layout */
 @media (max-width: 768px) {
@@ -198,7 +221,9 @@ ul {
         width: 100%;
     }
 
-   
+    .generate-button, .regular-button {
+        width: 100%;
+    }
 }
 
 @media (max-width: 500px) {
@@ -214,6 +239,4 @@ ul {
         padding: 15px;
         margin: 10px;
     }
-
-   
 }

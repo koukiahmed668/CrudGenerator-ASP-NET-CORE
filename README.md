@@ -1,83 +1,59 @@
 # CRUD Generator for ASP.NET Core
 
-This project is a CRUD (Create, Read, Update, Delete) generator for ASP.NET Core applications. It automates the creation of a simple CRUD application by generating a ZIP file containing the necessary project files and structure.
+This project is a CRUD (Create, Read, Update, Delete) generator for ASP.NET Core applications. It automates the creation of a simple CRUD application, allowing you to either generate the project through a user interface or use the CLI locally.
 
 ## Features
 
 - **Automated Project Generation**: Generates a complete ASP.NET Core CRUD application packaged as a ZIP file.
 - **Entity Framework Integration**: Utilizes Entity Framework Core for data access and management.
+- **User Interface**: Generate CRUD applications via a web interface.
+- **CLI Support**: Install and use the tool locally via the .NET CLI.
 
-## Prerequisites
+## How to Use
 
-- [.NET SDK](https://dotnet.microsoft.com/download) installed on your machine.
-- A code editor like [Visual Studio](https://visualstudio.microsoft.com/) or [Visual Studio Code](https://code.visualstudio.com/).
+### Option 1: Generate CRUD Application via User Interface
 
-## Getting Started
+1. Visit the website:  
+   [CRUD Generator Web Interface](https://crudgenerator-asp-net-core.onrender.com/home)
 
-1. **Clone the Repository**:
+2. Enter the details of the entity for which you want to generate CRUD operations.
 
-   ```bash
-   git clone https://github.com/koukiahmed668/CrudGenerator-ASP-NET-CORE.git
-   ```
+3. Click the **Generate** button to download a ZIP file containing the generated ASP.NET Core CRUD application.
 
-2. **Navigate to the Project Directory**:
+4. **Extract the ZIP File**: Once the ZIP file is downloaded, extract it to your preferred directory.
 
-   ```bash
-   cd CrudGenerator-ASP-NET-CORE
-   ```
-
-3. **Build the Project**:
+5. **Restore Dependencies**: In the project folder, run the following command to restore dependencies:
 
    ```bash
-   dotnet build
+   dotnet restore
    ```
+6. **Update Database**: Ensure your database connection string is correctly configured in the appsettings.json file. Then, apply any pending migrations:
 
-4. **Run the Application**:
-
-   ```bash
-   dotnet run
+```bash
+   dotnet ef database update
    ```
+7. **Run the Application**:
+```bash
+dotnet run
+   ```
+### Option 2: Use the CLI Locally
 
-5. **Generate a CRUD Application**:
+If you prefer to work with the CLI, you can install the CRUD generator tool and use it directly in your command line interface.
 
-   - Access the running application in your browser.
-   - Follow the on-screen instructions to specify the entity details for which you want to generate CRUD operations.
-   - Click the "Generate" button to download the ZIP file containing the generated ASP.NET Core CRUD application.
+1. Install the CLI Tool:
+Run the following command to install the tool globally on your machine:
+```bash
+dotnet tool install -g CrudGeneratorCli
+```
+2. Generate CRUD Application Using the CLI:
+Once installed, you can use the tool by running:
+```bash
+crudgen
+```
 
-6. **Extract and Check the Generated Code**:
+This will guide you through the process of generating a CRUD application, and the generated project will be saved in your current directory.
 
-   - Extract the contents of the downloaded ZIP file.
-   - Open the extracted project in your preferred code editor.
-   - **Restore Dependencies**:
-
-     ```bash
-     dotnet restore
-     ```
-
-   - **Update Database**:
-
-     Ensure your database connection string is correctly configured in the `appsettings.json` file. Then, apply any pending migrations:
-
-     ```bash
-     dotnet ef database update
-     ```
-
-   - **Run the Application**:
-
-     ```bash
-     dotnet run
-     ```
-
-   - Navigate to `https://localhost:5001` in your browser to see the generated CRUD application in action.
-
-## Customization
-
-After generating the CRUD application, you can customize it further by:
-
-- **Adding Business Logic**: Implement additional business rules in the controllers or services.
-- **Extending Models**: Add more properties or validation attributes to the generated models.
 
 ## Contributing
 
 Contributions are welcome! Feel free to open issues or submit pull requests to enhance the functionality of this CRUD generator.
-

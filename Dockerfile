@@ -2,11 +2,16 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# Copy and restore dependencies for both API and Client projects
-COPY CrudGenerator.sln ./
+# Copy the solution and required projects (excluding CLI)
+COPY CrudGenerator.sln ./ 
 COPY CrudGenerator/ ./CrudGenerator/
 COPY CrudGenerator.Client/ ./CrudGenerator.Client/
 COPY CrudGenerator.Shared/ ./CrudGenerator.Shared/
+
+# Remove the CLI project reference from the solution file
+RUN sed -i '/CrudGenerator.CLI/d' CrudGenerator.sln
+
+# Restore dependencies for the remaining projects
 RUN dotnet restore "CrudGenerator.sln"
 
 # Build both the API and the Blazor client
@@ -26,7 +31,6 @@ EXPOSE 8080
 COPY --from=publish /app/publish . 
 
 # Copy the Blazor client files from the published Blazor app to the wwwroot folder
-# Including _framework directory and all required static assets
 COPY --from=publish /app/client-publish/wwwroot /app/wwwroot
 COPY --from=publish /app/client-publish/wwwroot/_framework /app/wwwroot/_framework
 

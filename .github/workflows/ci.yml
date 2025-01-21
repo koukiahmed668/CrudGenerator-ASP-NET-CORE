@@ -23,7 +23,7 @@ jobs:
         dotnet-version: '8.0'
 
     - name: Restore dependencies
-      run: dotnet restore ./CrudGenerator.Cli/CrudGeneratorCli.csproj  
+      run: dotnet restore ../../CrudGenerator.Cli/CrudGeneratorCli.csproj  
 
     - name: Build the project
       run: dotnet build ./CrudGenerator.Cli/CrudGeneratorCli.csproj --configuration Release  

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-
+ 
 namespace CrudGenerator.Shared
 {
     public class CodeGenerationRequest

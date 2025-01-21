@@ -5,9 +5,9 @@ on:
     branches:
       - master
     paths:
-      - 'CrudGeneratorCli/CrudGeneratorCli.csproj'
+      - 'CrudGeneratorCli/CrudGeneratorCli.csproj'  
     tags:
-      - 'v*'
+      - 'v*' 
 
 jobs:
   build:
@@ -23,16 +23,14 @@ jobs:
         dotnet-version: '8.0'
 
     - name: Restore dependencies
-      run: dotnet restore
-
+      run: dotnet restore CrudGeneratorCli/CrudGeneratorCli.csproj  
     - name: Build the project
-      run: dotnet build --configuration Release
+      run: dotnet build CrudGeneratorCli/CrudGeneratorCli.csproj --configuration Release  
 
     - name: Pack the project
-      run: dotnet pack --configuration Release --output ./output
-
+      run: dotnet pack CrudGeneratorCli/CrudGeneratorCli.csproj --configuration Release --output ./output  
     - name: Push to NuGet
       env:
         NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
       run: |
-        dotnet nuget push ./output/*.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
+        dotnet nuget push ./output/CrudGeneratorCli*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json

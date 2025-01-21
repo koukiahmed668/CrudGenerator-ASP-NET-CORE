@@ -5,9 +5,9 @@ on:
     branches:
       - master
     paths:
-      - './CrudGenerator.CLI/CrudGenerator.CLI.csproj'
+      - 'CrudGenerator.CLI/CrudGenerator.CLI.csproj'  
     tags:
-      - 'v*' 
+      - 'v*'  
 
 jobs:
   build:
@@ -31,8 +31,12 @@ jobs:
     - name: Pack the project
       run: dotnet pack CrudGenerator.CLI/CrudGenerator.CLI.csproj --configuration Release --output ./output  
 
+    - name: List files in output directory
+      run: ls ./output  
+
     - name: Push to NuGet
       env:
         NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
       run: |
-        dotnet nuget push ./output/CrudGenerator.CLI*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
+        # Push the .nupkg file to NuGet
+        dotnet nuget push ./output/CrudGeneratorCli*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json

@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 using System.Linq;
-using MyApp.Data;
+using {{ProjectName}}.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace YourNamespace
+namespace {{ProjectName}}
 {
     public interface IUserRepository
     {

@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MyApp.Models;
-using YourNamespace;
+using {{ProjectName}}.Models;
+using {{ProjectName}};
 
-namespace MyApp.Data
+namespace {{ProjectName}}.Data
 {
     public class AppDbContext : DbContext
     {

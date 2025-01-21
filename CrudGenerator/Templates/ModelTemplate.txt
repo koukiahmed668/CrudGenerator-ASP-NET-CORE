@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MyApp.Models
+namespace {{ProjectName}}.Models
 {
     public class {{ModelName}}
     {

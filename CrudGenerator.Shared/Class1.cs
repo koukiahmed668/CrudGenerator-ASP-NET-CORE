@@ -5,6 +5,7 @@ namespace CrudGenerator.Shared
 {
     public class CodeGenerationRequest
     {
+        public string ProjectName { get; set; } 
         public List<ModelDefinition> Models { get; set; }
         public string ResponseType { get; set; } // "zip" or "text"
         public List<string> Roles { get; set; }

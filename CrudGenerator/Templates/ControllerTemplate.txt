@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MyApp.Models;
-using MyApp.Services;
+using {{ProjectName}}.Models;
+using {{ProjectName}}.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace MyApp.Controllers
+namespace {{ProjectName}}.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

@@ -1,9 +1,9 @@
-﻿using MyApp.Models;
+﻿using {{ProjectName}}.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MyApp.Repositories;
+using {{ProjectName}}.Repositories;
 
-namespace MyApp.Services
+namespace {{ProjectName}}.Services
 {
     public interface I{{ModelName}}Service
     {

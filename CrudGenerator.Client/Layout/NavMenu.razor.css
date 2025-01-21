@@ -14,9 +14,24 @@
 /* GitHub logo styling */
 .github-logo {
     margin-right: 10px; /* Increase space between logo and text */
-    width: 20px;
-    height: 20px;
+    width: 25px;
+    height: 25px;
     fill: #E0E0E0; /* Match the link text color */
+    animation: spin 4s linear infinite alternate;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    50% {
+        transform: rotate(90deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
+    }
 }
 
 

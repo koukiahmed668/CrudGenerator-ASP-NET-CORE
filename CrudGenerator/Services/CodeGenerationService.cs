@@ -18,7 +18,7 @@ namespace CrudGenerator.Services
 
 
 
-        public async Task<string> GenerateModelCode(string modelName, List<(string Name, string Type)> attributes, List<Relationship> relationships)
+        public async Task<string> GenerateModelCode(string modelName, List<(string Name, string Type)> attributes, List<Relationship> relationships, string projectName)
         {
             var template = await ReadTemplateAsync("ModelTemplate.txt");
 
@@ -38,9 +38,11 @@ namespace CrudGenerator.Services
             var relationshipDefinitions = string.Join(Environment.NewLine,
                 relationships.Select(rel => GenerateRelationshipCode(rel)));
 
+            // Replace both {{ModelName}} and {{ProjectName}} placeholders
             return template.Replace("{{ModelName}}", modelName)
                            .Replace("{{Attributes}}", attributeDefinitions)
-                           .Replace("{{Relationships}}", relationshipDefinitions);
+                           .Replace("{{Relationships}}", relationshipDefinitions)
+                           .Replace("{{ProjectName}}", projectName); // Replace {{ProjectName}}
         }
 
         private string GenerateRelationshipCode(Relationship relationship)
@@ -68,27 +70,30 @@ namespace CrudGenerator.Services
 
 
 
-        public async Task<string> GenerateServiceCode(string modelName)
+        public async Task<string> GenerateServiceCode(string modelName, string projectName)
         {
             var template = await ReadTemplateAsync("ServiceTemplate.txt");
-            return template.Replace("{{ModelName}}", modelName);
+            return template.Replace("{{ModelName}}", modelName)
+                           .Replace("{{ProjectName}}", projectName); // Replace {{ProjectName}}
         }
 
-        public async Task<string> GenerateControllerCode(string modelName)
+        public async Task<string> GenerateControllerCode(string modelName, string projectName)
         {
             var template = await ReadTemplateAsync("ControllerTemplate.txt");
-            return template.Replace("{{ModelName}}", modelName);
+            return template.Replace("{{ModelName}}", modelName)
+                           .Replace("{{ProjectName}}", projectName); // Replace {{ProjectName}}
         }
 
-        public async Task<string> GenerateRepositoryCode(string modelName)
+        public async Task<string> GenerateRepositoryCode(string modelName, string projectName)
         {
             var template = await ReadTemplateAsync("RepositoryTemplate.txt");
             return template
                 .Replace("{{ModelName}}", modelName)
-                .Replace("{{ModelNamePlural}}", Pluralize(modelName));
+                .Replace("{{ModelNamePlural}}", Pluralize(modelName))
+                .Replace("{{ProjectName}}", projectName); // Replace {{ProjectName}}
         }
 
-        public async Task<string> GenerateDbContextCode(List<ModelDefinition> models, bool includeJwtAuthentication)
+        public async Task<string> GenerateDbContextCode(List<ModelDefinition> models, bool includeJwtAuthentication, string projectName)
         {
             var template = await ReadTemplateAsync("DbContextTemplate.txt");
 
@@ -112,6 +117,7 @@ namespace CrudGenerator.Services
             // Replace placeholders in the template
             return template.Replace("{{DbSets}}", dbSets)
                            .Replace("{{RelationshipConfigurations}}", relationshipConfigurations)
+                           .Replace("{{ProjectName}}", projectName) // Replace {{ProjectName}}
                            .Replace("using YourNamespace;", namespaceImport);
         }
 
@@ -153,54 +159,55 @@ namespace CrudGenerator.Services
 
 
         // Generate the JwtAuthenticationManager
-        public async Task<string> GenerateJwtAuthenticationManagerCode()
+        public async Task<string> GenerateJwtAuthenticationManagerCode(string projectName)
         {
             var template = await ReadTemplateAsync("JwtAuthenticationManagerTemplate.txt");
-            return template;
+            return template.Replace("{{ProjectName}}", projectName);
         }
 
         // Generate the JwtMiddleware for token validation
-        public async Task<string> GenerateJwtMiddlewareCode()
+        public async Task<string> GenerateJwtMiddlewareCode(string projectName)
         {
             var template = await ReadTemplateAsync("JwtMiddlewareTemplate.txt");
-            return template;
+            return template.Replace("{{ProjectName}}", projectName);
         }
 
-        public async Task<string> GenerateJwtAuthenticationControllerCode()
+        public async Task<string> GenerateJwtAuthenticationControllerCode(string projectName)
         {
             var template = await ReadTemplateAsync("JwtAuthenticationControllerTemplate.txt");
 
             // Customize as necessary; replace placeholders in your template
-            return template;
+            return template.Replace("{{ProjectName}}", projectName);
         }
 
-        public async Task<string> GenerateUserServiceCode()
+        public async Task<string> GenerateUserServiceCode(string projectName)
         {
             var template = await ReadTemplateAsync("userAuth.txt");
-            return template;
+            return template.Replace("{{ProjectName}}", projectName);
         }
 
-        public async Task<string> GenerateUserRepositoryCode()
+        public async Task<string> GenerateUserRepositoryCode(string projectName)
         {
             var template = await ReadTemplateAsync("UserRepositoryTemplate.txt");
-            return template;
+            return template.Replace("{{ProjectName}}", projectName);
         }
 
-        public async Task<string> GenerateUserEntityCode()
+        public async Task<string> GenerateUserEntityCode(string projectName)
         {
             var template = await ReadTemplateAsync("UserEntityTemplate.txt");
-            return template;
+            return template.Replace("{{ProjectName}}", projectName);
         }
 
         // Generate authorization code (role-based)
-        public async Task<string> GenerateAuthorizationCode(List<string> roles)
+        public async Task<string> GenerateAuthorizationCode(List<string> roles, string projectName)
         {
             var template = await ReadTemplateAsync("AuthorizationTemplate.txt");
 
             var roleChecks = string.Join(Environment.NewLine,
                 roles.Select(role => $"        services.AddAuthorization(options => options.AddPolicy(\"{role}\", policy => policy.RequireRole(\"{role}\")));"));
 
-            return template.Replace("{{RoleChecks}}", roleChecks);
+            return template.Replace("{{RoleChecks}}", roleChecks)
+                .Replace("{{ProjectName}}", projectName);
         }
 
         private async Task<string> ReadTemplateAsync(string fileName)
@@ -214,7 +221,7 @@ namespace CrudGenerator.Services
 
 
 
-        public async Task<string> GenerateProgramCs(List<string> modelNames, bool includeJwtAuthentication)
+        public async Task<string> GenerateProgramCs(List<string> modelNames, bool includeJwtAuthentication, string projectName)
         {
             var template = await ReadTemplateAsync("ProgramTemplate.txt");
 
@@ -231,41 +238,41 @@ namespace CrudGenerator.Services
             // Generate JWT authentication section to include in the builder section
             var jwtBuilderSection = includeJwtAuthentication
                 ? @"
-                builder.Services.AddAuthentication(""Bearer"")
-                    .AddJwtBearer(options =>
-                    {
-                        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-                        {
-                            ValidateIssuerSigningKey = true,
-                            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(""YourJWTSecretKey"")),
-                            ValidateIssuer = false,
-                            ValidateAudience = false
-                        };
-                    });
-                builder.Services.AddAuthorization();
-                var key = ""YourSecretKeyHere""; // Replace with a secure key
-                builder.Services.AddSingleton(new JwtAuthenticationManager(key));"
+        builder.Services.AddAuthentication(""Bearer"")
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(""YourJWTSecretKey"")),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            });
+        builder.Services.AddAuthorization();
+        var key = ""YourSecretKeyHere""; // Replace with a secure key
+        builder.Services.AddSingleton(new JwtAuthenticationManager(key));"
                 : "";
 
             // Generate JWT middleware section to include after app.Build()
             var jwtMiddlewareSection = includeJwtAuthentication
                 ? @"
-                app.UseAuthentication();
-                app.UseAuthorization();
-                app.UseMiddleware<JwtMiddleware>(key);"
+        app.UseAuthentication();
+        app.UseAuthorization();
+        app.UseMiddleware<JwtMiddleware>(key);"
                 : "";
 
-            // Remove `using YourNamespace;` if JWT is not included
-            var namespaceImport = includeJwtAuthentication ? "using YourNamespace;" : string.Empty;
+            // Replace `using YourNamespace;` with the dynamic project name
+            var namespaceImport = includeJwtAuthentication ? $"using {projectName};" : string.Empty;
 
             // Replace placeholders in the template with the generated content
             return template.Replace("{{ServiceRegistrations}}", serviceRegistrations)
                            .Replace("{{RepositoryRegistrations}}", repositoryRegistrations)
                            .Replace("{{JwtAuthentication}}", jwtBuilderSection)
                            .Replace("{{JwtMiddleware}}", jwtMiddlewareSection)
-                           .Replace("using YourNamespace;", namespaceImport);
-
+                           .Replace("{{ProjectName}}", projectName);
         }
+
 
 
 

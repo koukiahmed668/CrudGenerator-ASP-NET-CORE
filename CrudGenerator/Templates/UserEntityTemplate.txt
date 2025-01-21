@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace YourNamespace
+namespace {{ProjectName}}
 {
     public class User
     {

@@ -1,10 +1,10 @@
-﻿using MyApp.Models;
+﻿using {{ProjectName}}.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MyApp.Data;
+using {{ProjectName}}.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace MyApp.Repositories
+namespace {{ProjectName}}.Repositories
 {
     public interface I{{ModelName}}Repository
     {

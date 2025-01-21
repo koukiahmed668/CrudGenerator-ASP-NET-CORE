@@ -1,0 +1,38 @@
+name: Publish to NuGet
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'CrudGeneratorCli/CrudGeneratorCli.csproj' 
+  tags:
+    - 'v*'  
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '8.0' 
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build the project
+      run: dotnet build --configuration Release
+
+    - name: Pack the project
+      run: dotnet pack --configuration Release --output ./output
+
+    - name: Push to NuGet
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      run: |
+        dotnet nuget push ./output/*.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json

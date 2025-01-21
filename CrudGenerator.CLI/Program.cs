@@ -15,6 +15,11 @@ class Program
     {
         Console.WriteLine("Welcome to the CRUD Generator CLI");
 
+        // Prompt for Project Name
+        Console.WriteLine("Enter the project name:");
+        var projectName = Console.ReadLine()?.Trim();
+
+
         // Start the interactive prompt for generating CRUD code
         var models = new List<ModelDefinition>();
         bool done = false;
@@ -50,6 +55,7 @@ class Program
         // Create the CodeGenerationRequest
         var request = new CodeGenerationRequest
         {
+            ProjectName = projectName,
             Models = models,
             ResponseType = "zip", // or "text", depending on your use case
             Roles = includeRoles ? new List<string> { "Admin", "User" } : new List<string>(),
@@ -58,6 +64,7 @@ class Program
 
         // Print out the summary for testing
         Console.WriteLine("Code generation request prepared: ");
+        Console.WriteLine($"Project Name: {projectName}");
         Console.WriteLine($"Models: {string.Join(", ", models.Select(m => m.Name))}");
         Console.WriteLine($"Include JWT: {includeJwt}");
         Console.WriteLine($"Include Roles: {includeRoles}");
@@ -250,6 +257,7 @@ class Program
 
     public class CodeGenerationRequest
     {
+        public string ProjectName { get; set; } 
         public List<ModelDefinition> Models { get; set; }
         public string ResponseType { get; set; } // "zip" or "text"
         public List<string> Roles { get; set; }

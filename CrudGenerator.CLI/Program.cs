@@ -282,17 +282,37 @@ class Program
     static async Task<string> GetGitHubToken()
     {
         string tokenFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".crudgen_token");
-        string accessToken;
+        string accessToken = null;
 
         if (File.Exists(tokenFilePath))
         {
-            accessToken = await File.ReadAllTextAsync(tokenFilePath);
-            Console.WriteLine("Using stored GitHub token.");
+            Console.WriteLine("A stored GitHub token was found. Do you want to use it? (yes/no):");
+            var useStoredTokenResponse = Console.ReadLine()?.Trim().ToLower();
+
+            if (useStoredTokenResponse == "yes")
+            {
+                accessToken = await File.ReadAllTextAsync(tokenFilePath);
+                Console.WriteLine("Using stored GitHub token.");
+            }
+            else
+            {
+                Console.WriteLine("Enter your new GitHub Personal Access Token:");
+                accessToken = Console.ReadLine()?.Trim();
+
+                Console.WriteLine("Do you want to save this token for future use? (yes/no):");
+                var saveTokenResponse = Console.ReadLine()?.Trim().ToLower();
+                if (saveTokenResponse == "yes")
+                {
+                    await File.WriteAllTextAsync(tokenFilePath, accessToken);
+                    Console.WriteLine("New token saved securely.");
+                }
+            }
         }
         else
         {
-            Console.WriteLine("Enter your GitHub Personal Access Token:");
+            Console.WriteLine("No stored GitHub token found. Enter your GitHub Personal Access Token:");
             accessToken = Console.ReadLine()?.Trim();
+
             Console.WriteLine("Do you want to save this token for future use? (yes/no):");
             var saveTokenResponse = Console.ReadLine()?.Trim().ToLower();
             if (saveTokenResponse == "yes")

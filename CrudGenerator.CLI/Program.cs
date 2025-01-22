@@ -335,6 +335,7 @@ class Program
     {
         string apiUrl = "https://api.github.com/user/repos";
         string repoUrl = $"https://github.com/{repoName}.git";
+        string generatedCodePath = Path.Combine(Directory.GetCurrentDirectory(), "generated_code");
 
         using var client = new HttpClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", accessToken);
@@ -351,12 +352,15 @@ class Program
         {
             Console.WriteLine($"Repository '{repoName}' created successfully on GitHub.");
 
-            // Initialize Git and push the project
+            // Navigate to the generated code folder and initialize Git
+            Directory.SetCurrentDirectory(generatedCodePath);
+
             RunCommand("git init");
             RunCommand($"git remote add origin {repoUrl}");
             RunCommand("git add .");
             RunCommand("git commit -m 'Initial commit'");
             RunCommand($"git push https://{accessToken}@github.com/{repoName}.git");
+
             Console.WriteLine($"Project pushed to GitHub repository: {repoUrl}");
         }
         else
@@ -366,6 +370,7 @@ class Program
             Console.WriteLine($"Error details: {errorDetails}");
         }
     }
+
 
     static void RunCommand(string command)
     {

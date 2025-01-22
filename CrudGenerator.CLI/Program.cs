@@ -356,10 +356,11 @@ class Program
             Directory.SetCurrentDirectory(generatedCodePath);
 
             RunCommand("git init");
-            RunCommand($"git remote add origin {repoUrl}");
+            RunCommand($"git remote add origin https://{accessToken}@github.com/{repoName}.git");
+            RunCommand("git checkout -b main");
             RunCommand("git add .");
             RunCommand("git commit -m 'Initial commit'");
-            RunCommand($"git push https://{accessToken}@github.com/{repoName}.git");
+            RunCommand("git push -u origin main");
 
             Console.WriteLine($"Project pushed to GitHub repository: {repoUrl}");
         }

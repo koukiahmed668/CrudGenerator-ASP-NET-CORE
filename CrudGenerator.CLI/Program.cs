@@ -8,6 +8,8 @@ using System.Text.Json;
 using System.IO.Compression;
 using System.IO;
 using System.Text.Json.Serialization;
+using System.Diagnostics;
+using System.Net.Http.Json;
 
 class Program
 {
@@ -241,6 +243,9 @@ class Program
                     // Optionally, delete the ZIP file after extraction
                     File.Delete(zipFilePath);
                     Console.WriteLine("ZIP file deleted after extraction.");
+
+                    // Prompt to create GitHub repo after extracting the ZIP
+                    await HandleGitHubRepoCreation(request.ProjectName);
                 }
                 else
                 {
@@ -252,6 +257,112 @@ class Program
                 Console.WriteLine($"An error occurred while sending the request: {ex.Message}");
             }
         }
+    }
+
+
+    static async Task HandleGitHubRepoCreation(string projectName)
+    {
+        Console.WriteLine("Do you want to create a GitHub repository for this project? (yes/no):");
+        var createRepoResponse = Console.ReadLine()?.Trim().ToLower();
+
+        if (createRepoResponse != "yes") return;
+
+        string accessToken = await GetGitHubToken();
+
+        Console.WriteLine("Do you want to use the project name as the repository name? (yes/no):");
+        var useProjectNameResponse = Console.ReadLine()?.Trim().ToLower();
+
+        string repoName = useProjectNameResponse == "yes"
+            ? projectName
+            : await PromptForCustomRepoName();
+
+        await CreateGitHubRepoAndPush(projectName, repoName, accessToken);
+    }
+
+    static async Task<string> GetGitHubToken()
+    {
+        string tokenFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".crudgen_token");
+        string accessToken;
+
+        if (File.Exists(tokenFilePath))
+        {
+            accessToken = await File.ReadAllTextAsync(tokenFilePath);
+            Console.WriteLine("Using stored GitHub token.");
+        }
+        else
+        {
+            Console.WriteLine("Enter your GitHub Personal Access Token:");
+            accessToken = Console.ReadLine()?.Trim();
+            Console.WriteLine("Do you want to save this token for future use? (yes/no):");
+            var saveTokenResponse = Console.ReadLine()?.Trim().ToLower();
+            if (saveTokenResponse == "yes")
+            {
+                await File.WriteAllTextAsync(tokenFilePath, accessToken);
+                Console.WriteLine("Token saved securely.");
+            }
+        }
+
+        return accessToken;
+    }
+
+    static async Task<string> PromptForCustomRepoName()
+    {
+        Console.WriteLine("Enter the name for the GitHub repository:");
+        return Console.ReadLine()?.Trim();
+    }
+
+    static async Task CreateGitHubRepoAndPush(string projectName, string repoName, string accessToken)
+    {
+        string apiUrl = "https://api.github.com/user/repos";
+        string repoUrl = $"https://github.com/{repoName}.git";
+
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("token", accessToken);
+        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("CRUD-Generator", "1.0"));
+
+        var repoPayload = new
+        {
+            name = repoName,
+            @private = true
+        };
+
+        var response = await client.PostAsJsonAsync(apiUrl, repoPayload);
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine($"Repository '{repoName}' created successfully on GitHub.");
+
+            // Initialize Git and push the project
+            RunCommand("git init");
+            RunCommand($"git remote add origin {repoUrl}");
+            RunCommand("git add .");
+            RunCommand("git commit -m 'Initial commit'");
+            RunCommand($"git push https://{accessToken}@github.com/{repoName}.git");
+            Console.WriteLine($"Project pushed to GitHub repository: {repoUrl}");
+        }
+        else
+        {
+            Console.WriteLine($"Failed to create repository: {response.StatusCode}");
+            var errorDetails = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error details: {errorDetails}");
+        }
+    }
+
+    static void RunCommand(string command)
+    {
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "bash",
+                Arguments = $"-c \"{command}\"",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            }
+        };
+        process.Start();
+        process.WaitForExit();
     }
 
 

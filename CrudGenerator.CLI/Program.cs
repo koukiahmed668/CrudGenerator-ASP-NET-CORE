@@ -32,8 +32,11 @@ class Program
         var relationships = await PromptForRelationships();
 
         // JWT and Roles
+        AnsiConsole.Write(new Spectre.Console.Rule("[yellow]JWT Authentication[/]").RuleStyle("blue").Centered());
         var includeJwt = AnsiConsole.Confirm("[yellow]Do you want to include JWT authentication?[/]");
-        var includeRoles = AnsiConsole.Confirm("[yellow]Do you want to include roles-based authentication?[/]");
+
+        AnsiConsole.Write(new Spectre.Console.Rule("[yellow]Roles-Based Authentication[/]").RuleStyle("blue").Centered());
+        var includeRoles = includeJwt && AnsiConsole.Confirm("[yellow]Do you want to include roles-based authentication?[/]");
 
         // Create the CodeGenerationRequest
         var request = new CodeGenerationRequest
@@ -56,6 +59,10 @@ class Program
         {
             // Send the request to the API
             await SendRequestToApi("https://crudgenerator-asp-net-core.onrender.com/api/CodeGeneration/generate", request);
+
+            // GitHub Repository
+            AnsiConsole.Write(new Spectre.Console.Rule("[yellow]GitHub Repository[/]").RuleStyle("blue").Centered());
+            await HandleGitHubRepoCreation(projectName);
         }
         else
         {
@@ -172,17 +179,14 @@ class Program
 
     static async Task HandleGitHubRepoCreation(string projectName)
     {
-        Console.WriteLine("Do you want to create a GitHub repository for this project? (yes/no):");
-        var createRepoResponse = Console.ReadLine()?.Trim().ToLower();
+        AnsiConsole.Write(new Spectre.Console.Rule("[yellow]GitHub Repository[/]").RuleStyle("blue").Centered());
 
-        if (createRepoResponse != "yes") return;
+        if (!AnsiConsole.Confirm("[yellow]Do you want to create a GitHub repository for this project?[/]")) return;
 
         string accessToken = await GetGitHubToken();
 
-        Console.WriteLine("Do you want to use the project name as the repository name? (yes/no):");
-        var useProjectNameResponse = Console.ReadLine()?.Trim().ToLower();
-
-        string repoName = useProjectNameResponse == "yes"
+        bool useProjectName = AnsiConsole.Confirm("[yellow]Do you want to use the project name as the repository name?[/]");
+        string repoName = useProjectName
             ? projectName
             : await PromptForCustomRepoName();
 
@@ -196,40 +200,34 @@ class Program
 
         if (File.Exists(tokenFilePath))
         {
-            Console.WriteLine("A stored GitHub token was found. Do you want to use it? (yes/no):");
-            var useStoredTokenResponse = Console.ReadLine()?.Trim().ToLower();
-
-            if (useStoredTokenResponse == "yes")
+            AnsiConsole.MarkupLine("[yellow]A stored GitHub token was found. Do you want to use it?[/]");
+            if (AnsiConsole.Confirm("[yellow]Use the stored token?[/]"))
             {
                 accessToken = await File.ReadAllTextAsync(tokenFilePath);
-                Console.WriteLine("Using stored GitHub token.");
+                AnsiConsole.MarkupLine("[green]Using stored GitHub token.[/]");
             }
             else
             {
-                Console.WriteLine("Enter your new GitHub Personal Access Token:");
-                accessToken = Console.ReadLine()?.Trim();
-
-                Console.WriteLine("Do you want to save this token for future use? (yes/no):");
-                var saveTokenResponse = Console.ReadLine()?.Trim().ToLower();
-                if (saveTokenResponse == "yes")
-                {
-                    await File.WriteAllTextAsync(tokenFilePath, accessToken);
-                    Console.WriteLine("New token saved securely.");
-                }
+                accessToken = await PromptForNewGitHubToken(tokenFilePath);
             }
         }
         else
         {
-            Console.WriteLine("No stored GitHub token found. Enter your GitHub Personal Access Token:");
-            accessToken = Console.ReadLine()?.Trim();
+            accessToken = await PromptForNewGitHubToken(tokenFilePath);
+        }
 
-            Console.WriteLine("Do you want to save this token for future use? (yes/no):");
-            var saveTokenResponse = Console.ReadLine()?.Trim().ToLower();
-            if (saveTokenResponse == "yes")
-            {
-                await File.WriteAllTextAsync(tokenFilePath, accessToken);
-                Console.WriteLine("Token saved securely.");
-            }
+        return accessToken;
+    }
+
+    static async Task<string> PromptForNewGitHubToken(string tokenFilePath)
+    {
+        AnsiConsole.MarkupLine("[yellow]Enter your new GitHub Personal Access Token:[/]");
+        string accessToken = Console.ReadLine()?.Trim();
+
+        if (AnsiConsole.Confirm("[yellow]Do you want to save this token for future use?[/]"))
+        {
+            await File.WriteAllTextAsync(tokenFilePath, accessToken);
+            AnsiConsole.MarkupLine("[green]New token saved securely.[/]");
         }
 
         return accessToken;
@@ -237,8 +235,7 @@ class Program
 
     static async Task<string> PromptForCustomRepoName()
     {
-        Console.WriteLine("Enter the name for the GitHub repository:");
-        return Console.ReadLine()?.Trim();
+        return AnsiConsole.Ask<string>("[yellow]Enter the name for the GitHub repository:[/]");
     }
 
     static async Task CreateGitHubRepoAndPush(string projectName, string repoName, string accessToken)
@@ -259,15 +256,15 @@ class Program
         var response = await client.PostAsJsonAsync(apiUrl, repoPayload);
         if (response.IsSuccessStatusCode)
         {
-            Console.WriteLine($"Repository '{repoName}' created successfully on GitHub.");
+            AnsiConsole.MarkupLine($"[green]Repository '{repoName}' created successfully on GitHub.[/]");
 
             // Extract the username from the GitHub token API
             var userResponse = await client.GetAsync("https://api.github.com/user");
             if (!userResponse.IsSuccessStatusCode)
             {
-                Console.WriteLine($"Failed to fetch GitHub user info: {userResponse.StatusCode}");
+                AnsiConsole.MarkupLine($"[red]Failed to fetch GitHub user info: {userResponse.StatusCode}[/]");
                 var errorDetails = await userResponse.Content.ReadAsStringAsync();
-                Console.WriteLine($"Error details: {errorDetails}");
+                AnsiConsole.MarkupLine($"[red]Error details: {errorDetails}[/]");
                 return;
             }
 
@@ -277,7 +274,7 @@ class Program
 
             if (string.IsNullOrEmpty(username))
             {
-                Console.WriteLine("Failed to determine the GitHub username.");
+                AnsiConsole.MarkupLine("[red]Failed to determine the GitHub username.[/]");
                 return;
             }
 
@@ -293,13 +290,13 @@ class Program
             RunCommand("git commit -m 'Initial commit'");
             RunCommand("git push -u origin main");
 
-            Console.WriteLine($"Project pushed to GitHub repository: {repoUrl}");
+            AnsiConsole.MarkupLine($"[green]Project pushed to GitHub repository: {repoUrl}[/]");
         }
         else
         {
-            Console.WriteLine($"Failed to create repository: {response.StatusCode}");
+            AnsiConsole.MarkupLine($"[red]Failed to create repository: {response.StatusCode}[/]");
             var errorDetails = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Error details: {errorDetails}");
+            AnsiConsole.MarkupLine($"[red]Error details: {errorDetails}[/]");
         }
     }
 

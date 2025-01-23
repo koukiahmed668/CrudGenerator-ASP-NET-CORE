@@ -1,263 +1,173 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
-using System.Text.Json;
-using System.IO.Compression;
-using System.IO;
-using System.Text.Json.Serialization;
-using System.Diagnostics;
 using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+using Spectre.Console;
 
 class Program
 {
     static async Task<int> Main(string[] args)
     {
-        Console.WriteLine("Welcome to the CRUD Generator CLI");
+        AnsiConsole.Markup("[bold blue]Welcome to the CRUD Generator CLI[/] :rocket:\n");
 
         // Prompt for Project Name
-        Console.WriteLine("Enter the project name:");
-        var projectName = Console.ReadLine()?.Trim();
+        var projectName = AnsiConsole.Ask<string>("[bold yellow]Enter the project name:[/]").Trim();
 
+        // Show banner for model generation
+        AnsiConsole.Write(new Spectre.Console.Rule("[yellow]Model Generation[/]").RuleStyle("blue").Centered());
+        var models = await PromptForModels();
 
-        // Start the interactive prompt for generating CRUD code
-        var models = new List<ModelDefinition>();
-        bool done = false;
-
-        while (!done)
-        {
-            Console.WriteLine("Do you want to add a model? (yes/no):");
-            var addModelResponse = Console.ReadLine()?.Trim().ToLower();
-
-            if (addModelResponse == "yes")
-            {
-                var model = await PromptForModel();
-                models.Add(model);
-
-                Console.WriteLine("Are you done with this model? (yes/no):");
-                var doneResponse = Console.ReadLine()?.Trim().ToLower();
-                if (doneResponse == "yes")
-                {
-                    done = true;
-                }
-            }
-            else
-            {
-                done = true;
-            }
-        }
-
-        // Ask about relationships and other configurations
+        // Relationships
+        AnsiConsole.Write(new Spectre.Console.Rule("[yellow]Relationships[/]").RuleStyle("blue").Centered());
         var relationships = await PromptForRelationships();
-        var includeJwt = await PromptForJwt();
-        var includeRoles = await PromptForRoles();
+
+        // JWT and Roles
+        var includeJwt = AnsiConsole.Confirm("[yellow]Do you want to include JWT authentication?[/]");
+        var includeRoles = AnsiConsole.Confirm("[yellow]Do you want to include roles-based authentication?[/]");
 
         // Create the CodeGenerationRequest
         var request = new CodeGenerationRequest
         {
             ProjectName = projectName,
             Models = models,
-            ResponseType = "zip", // or "text", depending on your use case
+            ResponseType = "zip",
             Roles = includeRoles ? new List<string> { "Admin", "User" } : new List<string>(),
             IncludeJwtAuthentication = includeJwt
         };
 
-        // Print out the summary for testing
-        Console.WriteLine("Code generation request prepared: ");
-        Console.WriteLine($"Project Name: {projectName}");
-        Console.WriteLine($"Models: {string.Join(", ", models.Select(m => m.Name))}");
-        Console.WriteLine($"Include JWT: {includeJwt}");
-        Console.WriteLine($"Include Roles: {includeRoles}");
+        // Summary of choices
+        AnsiConsole.Write(new Spectre.Console.Rule("[yellow]Summary of Your Choices[/]").RuleStyle("green").Centered());
+        AnsiConsole.Markup($"[bold green]Project Name:[/] {projectName}\n");
+        AnsiConsole.Markup($"[bold green]Models:[/] {string.Join(", ", models.Select(m => m.Name))}\n");
+        AnsiConsole.Markup($"[bold green]JWT Authentication:[/] {(includeJwt ? "Enabled" : "Disabled")}\n");
+        AnsiConsole.Markup($"[bold green]Roles Authentication:[/] {(includeRoles ? "Enabled" : "Disabled")}\n");
 
-        // Send request to the API to generate the ZIP file
-        var apiUrl = "https://crudgenerator-asp-net-core.onrender.com/api/CodeGeneration/generate"; // Replace with your actual API endpoint
-        await SendRequestToApi(apiUrl, request);
+        if (AnsiConsole.Confirm("[bold yellow]Is this information correct?[/]"))
+        {
+            // Send the request to the API
+            await SendRequestToApi("https://crudgenerator-asp-net-core.onrender.com/api/CodeGeneration/generate", request);
+        }
+        else
+        {
+            AnsiConsole.Markup("[red]Aborting...[/]");
+            return 1;
+        }
 
         return 0;
     }
 
-    static async Task<ModelDefinition> PromptForModel()
+    static async Task<List<ModelDefinition>> PromptForModels()
     {
-        Console.WriteLine("Enter model name:");
-        var modelName = Console.ReadLine()?.Trim();
-
-        var model = new ModelDefinition { Name = modelName, Attributes = new List<AttributeDefinition>(), Relationships = new List<Relationship>() };
-
-        // Ask for attributes
-        var attributes = new List<AttributeDefinition>();
-        bool done = false;
-
-        while (!done)
+        var models = new List<ModelDefinition>();
+        while (AnsiConsole.Confirm("[yellow]Do you want to add a new model?[/]"))
         {
-            Console.WriteLine("Enter attribute name (or type 'done' to finish):");
-            var attributeName = Console.ReadLine()?.Trim();
+            var modelName = AnsiConsole.Ask<string>("[yellow]Enter model name:[/]").Trim();
 
-            if (attributeName?.ToLower() == "done")
+            // Collect attributes
+            var attributes = new List<AttributeDefinition>();
+            AnsiConsole.Write(new Spectre.Console.Rule("[yellow]Attributes[/]").RuleStyle("blue").Centered());
+            while (AnsiConsole.Confirm("[yellow]Do you want to add an attribute?[/]"))
             {
-                done = true;
-            }
-            else
-            {
-                // Ask for attribute type with built-in options
-                var attributeType = await PromptForAttributeType();
+                var attributeName = AnsiConsole.Ask<string>("[yellow]Enter attribute name:[/]").Trim();
+                var attributeType = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("[yellow]Select attribute type:[/]")
+                        .AddChoices("int", "string", "DateTime", "bool", "decimal", "double", "Guid", "Custom"));
+
+                if (attributeType == "Custom")
+                {
+                    attributeType = AnsiConsole.Ask<string>("[yellow]Enter custom type name:[/]").Trim();
+                }
+
                 attributes.Add(new AttributeDefinition { Name = attributeName, Type = attributeType });
             }
+
+            models.Add(new ModelDefinition { Name = modelName, Attributes = attributes });
         }
 
-        model.Attributes = attributes;
-        return model;
-    }
-
-    static async Task<string> PromptForAttributeType()
-    {
-        // Predefined built-in attribute types
-        var builtInTypes = new List<string> { "int", "string", "DateTime", "bool", "decimal", "double", "Guid" };
-
-        Console.WriteLine("Select an attribute type:");
-        for (int i = 0; i < builtInTypes.Count; i++)
-        {
-            Console.WriteLine($"{i + 1}. {builtInTypes[i]}");
-        }
-
-        Console.WriteLine($"{builtInTypes.Count + 1}. Custom Type");
-
-        var selection = Console.ReadLine()?.Trim();
-
-        if (int.TryParse(selection, out var index) && index > 0 && index <= builtInTypes.Count)
-        {
-            return builtInTypes[index - 1]; // Return selected built-in type
-        }
-        else if (index == builtInTypes.Count + 1)
-        {
-            Console.WriteLine("Enter custom attribute type:");
-            return Console.ReadLine()?.Trim();
-        }
-        else
-        {
-            Console.WriteLine("Invalid selection, defaulting to 'string'");
-            return "string";
-        }
+        return models;
     }
 
     static async Task<List<Relationship>> PromptForRelationships()
     {
         var relationships = new List<Relationship>();
-        bool done = false;
-
-        while (!done)
+        while (AnsiConsole.Confirm("[yellow]Do you want to add a relationship?[/]"))
         {
-            Console.WriteLine("Do you want to add a relationship? (yes/no):");
-            var addRelationshipResponse = Console.ReadLine()?.Trim().ToLower();
+            var sourceModel = AnsiConsole.Ask<string>("[yellow]Enter the source model for the relationship:[/]").Trim();
+            var targetModel = AnsiConsole.Ask<string>("[yellow]Enter the target model for the relationship:[/]").Trim();
+            var relationshipType = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[yellow]Select relationship type:[/]")
+                    .AddChoices("OneToMany", "ManyToOne", "ManyToMany"));
 
-            if (addRelationshipResponse == "yes")
+            relationships.Add(new Relationship
             {
-                var relationship = await PromptForRelationship();
-                relationships.Add(relationship);
-            }
-            else
-            {
-                done = true;
-            }
+                PropertyName = $"{sourceModel}s", // Pluralize source model by default
+                TargetModel = targetModel,
+                Type = Enum.Parse<RelationshipType>(relationshipType)
+            });
         }
 
         return relationships;
     }
 
-    static async Task<Relationship> PromptForRelationship()
-    {
-        Console.WriteLine("Enter the source model for the relationship:");
-        var sourceModel = Console.ReadLine()?.Trim();
-
-        Console.WriteLine("Enter the target model for the relationship:");
-        var targetModel = Console.ReadLine()?.Trim();
-
-        Console.WriteLine("Enter the relationship type (OneToMany, ManyToOne, ManyToMany):");
-        var relationshipType = Enum.Parse<RelationshipType>(Console.ReadLine()?.Trim(), true);
-
-        return new Relationship
-        {
-            PropertyName = sourceModel + "s",  // Default pluralization (can be customized)
-            TargetModel = targetModel,
-            Type = relationshipType
-        };
-    }
-
-    static async Task<bool> PromptForJwt()
-    {
-        Console.WriteLine("Do you want to include JWT authentication? (yes/no):");
-        var includeJwtResponse = Console.ReadLine()?.Trim().ToLower();
-        return includeJwtResponse == "yes";
-    }
-
-    static async Task<bool> PromptForRoles()
-    {
-        Console.WriteLine("Do you want to include roles-based authentication? (yes/no):");
-        var includeRolesResponse = Console.ReadLine()?.Trim().ToLower();
-        return includeRolesResponse == "yes";
-    }
-
     static async Task SendRequestToApi(string apiUrl, CodeGenerationRequest request)
     {
-        using (var client = new HttpClient())
+        using var client = new HttpClient();
+        try
         {
-            try
-            {
-                // Serialize the request object to JSON
-                var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
-                // Send the POST request
-                var response = await client.PostAsync(apiUrl, content);
-
-                // Check for a successful response
-                if (response.IsSuccessStatusCode)
+            // Show spinner while waiting for the response
+            await AnsiConsole.Status()
+                .StartAsync("Sending request to the server...", async ctx =>
                 {
-                    Console.WriteLine("Code generation request successful. Retrieving ZIP file...");
-
-                    // Assuming the API returns the ZIP file as a response
-                    var zipFile = await response.Content.ReadAsByteArrayAsync();
-
-                    // Get the current working directory (the directory the user is running the CLI from)
-                    string currentDirectory = Directory.GetCurrentDirectory();
-
-                    // Define the full file path where the ZIP file will be saved
-                    var zipFilePath = Path.Combine(currentDirectory, "generated_code.zip");
-
-                    // Save the ZIP file in the current directory
-                    await System.IO.File.WriteAllBytesAsync(zipFilePath, zipFile);
-                    Console.WriteLine($"ZIP file saved as {zipFilePath}");
-
-                    // Extract the ZIP file in the current directory
-                    string extractPath = Path.Combine(currentDirectory, "generated_code");
-
-                    if (!Directory.Exists(extractPath))
+                    var response = await client.PostAsync(apiUrl, content);
+                    if (response.IsSuccessStatusCode)
                     {
-                        Directory.CreateDirectory(extractPath);
+                        var zipFile = await response.Content.ReadAsByteArrayAsync();
+                        var currentDirectory = Directory.GetCurrentDirectory();
+                        var zipFilePath = Path.Combine(currentDirectory, "generated_code.zip");
+                        await File.WriteAllBytesAsync(zipFilePath, zipFile);
+
+                        var extractPath = Path.Combine(currentDirectory, "generated_code");
+                        if (!Directory.Exists(extractPath))
+                        {
+                            Directory.CreateDirectory(extractPath);
+                        }
+
+                        ZipFile.ExtractToDirectory(zipFilePath, extractPath);
+                        File.Delete(zipFilePath);
+
+                        AnsiConsole.Markup("[bold green]Code generation complete![/]\n");
+                        AnsiConsole.Markup($"[bold green]Generated code extracted to:[/] {extractPath}\n");
+                        // Prompt to create GitHub repo after extracting the ZIP
+                        await HandleGitHubRepoCreation(request.ProjectName);
                     }
-
-                    // Extract the ZIP file
-                    ZipFile.ExtractToDirectory(zipFilePath, extractPath);
-                    Console.WriteLine($"ZIP file extracted to {extractPath}");
-
-                    // Optionally, delete the ZIP file after extraction
-                    File.Delete(zipFilePath);
-                    Console.WriteLine("ZIP file deleted after extraction.");
-
-                    // Prompt to create GitHub repo after extracting the ZIP
-                    await HandleGitHubRepoCreation(request.ProjectName);
-                }
-                else
-                {
-                    Console.WriteLine($"Failed to generate code. API responded with status: {response.StatusCode}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred while sending the request: {ex.Message}");
-            }
+                    else
+                    {
+                        AnsiConsole.Markup($"[bold red]Request failed with status code:[/] {response.StatusCode}\n");
+                    }
+                });
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.Markup($"[bold red]Error:[/] {ex.Message}\n");
         }
     }
+
+
+
 
 
     static async Task HandleGitHubRepoCreation(string projectName)
@@ -334,7 +244,6 @@ class Program
     static async Task CreateGitHubRepoAndPush(string projectName, string repoName, string accessToken)
     {
         string apiUrl = "https://api.github.com/user/repos";
-        string repoUrl = $"https://github.com/{repoName}.git";
         string generatedCodePath = Path.Combine(Directory.GetCurrentDirectory(), "generated_code");
 
         using var client = new HttpClient();
@@ -352,11 +261,33 @@ class Program
         {
             Console.WriteLine($"Repository '{repoName}' created successfully on GitHub.");
 
+            // Extract the username from the GitHub token API
+            var userResponse = await client.GetAsync("https://api.github.com/user");
+            if (!userResponse.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Failed to fetch GitHub user info: {userResponse.StatusCode}");
+                var errorDetails = await userResponse.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error details: {errorDetails}");
+                return;
+            }
+
+            var userJson = await userResponse.Content.ReadAsStringAsync();
+            var user = JsonSerializer.Deserialize<GitHubUser>(userJson);
+            string username = user?.Login;
+
+            if (string.IsNullOrEmpty(username))
+            {
+                Console.WriteLine("Failed to determine the GitHub username.");
+                return;
+            }
+
+            string repoUrl = $"https://github.com/{username}/{repoName}.git";
+
             // Navigate to the generated code folder and initialize Git
             Directory.SetCurrentDirectory(generatedCodePath);
 
             RunCommand("git init");
-            RunCommand($"git remote add origin https://{accessToken}@github.com/{repoName}.git");
+            RunCommand($"git remote add origin https://{accessToken}@github.com/{username}/{repoName}.git");
             RunCommand("git checkout -b main");
             RunCommand("git add .");
             RunCommand("git commit -m 'Initial commit'");
@@ -479,5 +410,12 @@ class Program
             writer.WriteStringValue(enumValue);
         }
     }
+
+    public class GitHubUser
+    {
+        [JsonPropertyName("login")]
+        public string Login { get; set; }
+    }
+
 
 }

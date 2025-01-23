@@ -135,34 +135,41 @@ class Program
         {
             var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
-            // Show spinner while waiting for the response
+            // Ensure only one dynamic display is active at a time
             await AnsiConsole.Status()
                 .StartAsync("Sending request to the server...", async ctx =>
                 {
+                    ctx.Status("Connecting to server...");
+                    ctx.Spinner(Spinner.Known.Dots);
+
                     var response = await client.PostAsync(apiUrl, content);
+
                     if (response.IsSuccessStatusCode)
                     {
+                        ctx.Status("Downloading generated code...");
                         var zipFile = await response.Content.ReadAsByteArrayAsync();
+
+                        // Save ZIP file to disk
                         var currentDirectory = Directory.GetCurrentDirectory();
                         var zipFilePath = Path.Combine(currentDirectory, "generated_code.zip");
                         await File.WriteAllBytesAsync(zipFilePath, zipFile);
 
+                        // Extract the ZIP
+                        ctx.Status("Extracting files...");
                         var extractPath = Path.Combine(currentDirectory, "generated_code");
                         if (!Directory.Exists(extractPath))
                         {
                             Directory.CreateDirectory(extractPath);
                         }
-
                         ZipFile.ExtractToDirectory(zipFilePath, extractPath);
                         File.Delete(zipFilePath);
 
                         AnsiConsole.Markup("[bold green]Code generation complete![/]\n");
                         AnsiConsole.Markup($"[bold green]Generated code extracted to:[/] {extractPath}\n");
-                        // Prompt to create GitHub repo after extracting the ZIP
-                        await HandleGitHubRepoCreation(request.ProjectName);
                     }
                     else
                     {
+                        ctx.Status("Error occurred!");
                         AnsiConsole.Markup($"[bold red]Request failed with status code:[/] {response.StatusCode}\n");
                     }
                 });
@@ -172,6 +179,7 @@ class Program
             AnsiConsole.Markup($"[bold red]Error:[/] {ex.Message}\n");
         }
     }
+
 
 
 
@@ -282,6 +290,7 @@ class Program
 
             // Navigate to the generated code folder and initialize Git
             Directory.SetCurrentDirectory(generatedCodePath);
+            AnsiConsole.MarkupLine($"[green]Current directory:[/] {Directory.GetCurrentDirectory()}");
 
             RunCommand("git init");
             RunCommand($"git remote add origin https://{accessToken}@github.com/{username}/{repoName}.git");
@@ -315,9 +324,29 @@ class Program
                 CreateNoWindow = true,
             }
         };
+
         process.Start();
+        string output = process.StandardOutput.ReadToEnd();
+        string error = process.StandardError.ReadToEnd();
         process.WaitForExit();
+
+        if (!string.IsNullOrEmpty(output))
+        {
+            AnsiConsole.MarkupLine($"[green]{output}[/]");
+        }
+
+        if (!string.IsNullOrEmpty(error))
+        {
+            AnsiConsole.MarkupLine($"[red]{error}[/]");
+        }
+
+        if (process.ExitCode != 0)
+        {
+            AnsiConsole.MarkupLine($"[red]Command failed: {command}[/]");
+            throw new Exception($"Command failed: {command} with exit code {process.ExitCode}");
+        }
     }
+
 
 
     public class CodeGenerationRequest

@@ -310,7 +310,7 @@ class Program
     }
 
 
-    static void RunCommand(string command)
+    static void RunCommand(string command, bool configureGit = false)
     {
         var process = new Process
         {
@@ -340,12 +340,26 @@ class Program
             AnsiConsole.MarkupLine($"[red]{error}[/]");
         }
 
-        if (process.ExitCode != 0)
+        if (process.ExitCode != 0 && configureGit)
         {
-            AnsiConsole.MarkupLine($"[red]Command failed: {command}[/]");
-            throw new Exception($"Command failed: {command} with exit code {process.ExitCode}");
+            if (error.Contains("Author identity unknown"))
+            {
+                AnsiConsole.MarkupLine("[yellow]Git user.name and user.email are not set. Configuring for the local repository...[/]");
+
+                RunCommand("git config user.name \"Your Name\""); // Set user.name locally for the repository
+                RunCommand("git config user.email \"your.email@example.com\""); // Set user.email locally for the repository
+
+                AnsiConsole.MarkupLine("[green]Git configuration updated locally. Retrying command...[/]");
+                RunCommand(command); // Retry the original command after configuration
+            }
+            else
+            {
+                throw new Exception($"Command failed: {command} with exit code {process.ExitCode}");
+            }
         }
     }
+
+
 
 
 

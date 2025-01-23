@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Spectre.Console;
 
@@ -133,7 +129,7 @@ class Program
         using var client = new HttpClient();
         try
         {
-            var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonSerializer.Serialize(request), System.Text.Encoding.UTF8, "application/json");
 
             // Ensure only one dynamic display is active at a time
             await AnsiConsole.Status()
@@ -180,11 +176,6 @@ class Program
         }
     }
 
-
-
-
-
-
     static async Task HandleGitHubRepoCreation(string projectName)
     {
         AnsiConsole.Write(new Spectre.Console.Rule("[yellow]GitHub Repository[/]").RuleStyle("blue").Centered());
@@ -198,7 +189,7 @@ class Program
             ? projectName
             : await PromptForCustomRepoName();
 
-        await CreateGitHubRepoAndPush(projectName, repoName, accessToken);
+        await CreateGitHubRepoAndInitGitFolder(projectName, repoName, accessToken);
     }
 
     static async Task<string> GetGitHubToken()
@@ -246,7 +237,7 @@ class Program
         return AnsiConsole.Ask<string>("[yellow]Enter the name for the GitHub repository:[/]");
     }
 
-    static async Task CreateGitHubRepoAndPush(string projectName, string repoName, string accessToken)
+    static async Task CreateGitHubRepoAndInitGitFolder(string projectName, string repoName, string accessToken)
     {
         string apiUrl = "https://api.github.com/user/repos";
         string generatedCodePath = Path.Combine(Directory.GetCurrentDirectory(), "generated_code");
@@ -266,40 +257,13 @@ class Program
         {
             AnsiConsole.MarkupLine($"[green]Repository '{repoName}' created successfully on GitHub.[/]");
 
-            // Extract the username from the GitHub token API
-            var userResponse = await client.GetAsync("https://api.github.com/user");
-            if (!userResponse.IsSuccessStatusCode)
-            {
-                AnsiConsole.MarkupLine($"[red]Failed to fetch GitHub user info: {userResponse.StatusCode}[/]");
-                var errorDetails = await userResponse.Content.ReadAsStringAsync();
-                AnsiConsole.MarkupLine($"[red]Error details: {errorDetails}[/]");
-                return;
-            }
-
-            var userJson = await userResponse.Content.ReadAsStringAsync();
-            var user = JsonSerializer.Deserialize<GitHubUser>(userJson);
-            string username = user?.Login;
-
-            if (string.IsNullOrEmpty(username))
-            {
-                AnsiConsole.MarkupLine("[red]Failed to determine the GitHub username.[/]");
-                return;
-            }
-
-            string repoUrl = $"https://github.com/{username}/{repoName}.git";
-
-            // Navigate to the generated code folder and initialize Git
+            // Initialize Git in the generated code folder
             Directory.SetCurrentDirectory(generatedCodePath);
             AnsiConsole.MarkupLine($"[green]Current directory:[/] {Directory.GetCurrentDirectory()}");
 
             RunCommand("git init");
-            RunCommand($"git remote add origin https://{accessToken}@github.com/{username}/{repoName}.git");
-            RunCommand("git checkout -b main");
-            RunCommand("git add .");
-            RunCommand("git commit -m 'Initial commit'");
-            RunCommand("git push -u origin main");
 
-            AnsiConsole.MarkupLine($"[green]Project pushed to GitHub repository: {repoUrl}[/]");
+            AnsiConsole.MarkupLine($"[green]Git repository initialized in {generatedCodePath}[/]");
         }
         else
         {
@@ -309,8 +273,7 @@ class Program
         }
     }
 
-
-    static void RunCommand(string command, bool configureGit = false)
+    static async Task RunCommand(string command)
     {
         var process = new Process
         {
@@ -339,123 +302,45 @@ class Program
         {
             AnsiConsole.MarkupLine($"[red]{error}[/]");
         }
-
-        if (process.ExitCode != 0 && configureGit)
-        {
-            if (error.Contains("Author identity unknown"))
-            {
-                AnsiConsole.MarkupLine("[yellow]Git user.name and user.email are not set. Configuring for the local repository...[/]");
-
-                RunCommand("git config user.name \"Your Name\""); // Set user.name locally for the repository
-                RunCommand("git config user.email \"your.email@example.com\""); // Set user.email locally for the repository
-
-                AnsiConsole.MarkupLine("[green]Git configuration updated locally. Retrying command...[/]");
-                RunCommand(command); // Retry the original command after configuration
-            }
-            else
-            {
-                throw new Exception($"Command failed: {command} with exit code {process.ExitCode}");
-            }
-        }
     }
 
-
-
-
-
-    public class CodeGenerationRequest
+    class CodeGenerationRequest
     {
-        public string ProjectName { get; set; } 
+        public string ProjectName { get; set; }
         public List<ModelDefinition> Models { get; set; }
-        public string ResponseType { get; set; } // "zip" or "text"
+        public string ResponseType { get; set; }
         public List<string> Roles { get; set; }
         public bool IncludeJwtAuthentication { get; set; }
-
-
     }
 
-    // Model definition for code generation
-    public class ModelDefinition
+    class ModelDefinition
     {
         public string Name { get; set; }
         public List<AttributeDefinition> Attributes { get; set; }
-        public List<Relationship> Relationships { get; set; }
-
     }
 
-    // Attribute definition
-    public class AttributeDefinition
+    class AttributeDefinition
     {
         public string Name { get; set; }
         public string Type { get; set; }
     }
 
-    public class Relationship
+    class Relationship
     {
-        public string PropertyName { get; set; }  // e.g., "Orders" in Customer model for one-to-many relationship
-        public string TargetModel { get; set; }    // e.g., "Order" for one-to-many relationship
-
-        [JsonConverter(typeof(RelationshipTypeConverter))]
+        public string PropertyName { get; set; }
+        public string TargetModel { get; set; }
         public RelationshipType Type { get; set; }
     }
 
-    public enum RelationshipType
+    enum RelationshipType
     {
         OneToMany,
         ManyToOne,
         ManyToMany
     }
 
-
-    public class RelationshipTypeConverter : JsonConverter<RelationshipType>
+    class GitHubUser
     {
-        public override RelationshipType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            if (reader.TokenType == JsonTokenType.String)
-            {
-                string value = reader.GetString();
-                return value switch
-                {
-                    "OneToMany" => RelationshipType.OneToMany,
-                    "ManyToOne" => RelationshipType.ManyToOne,
-                    "ManyToMany" => RelationshipType.ManyToMany,
-                    _ => throw new JsonException($"Invalid value for RelationshipType: {value}")
-                };
-            }
-
-            if (reader.TokenType == JsonTokenType.Number)
-            {
-                int value = reader.GetInt32();
-                return value switch
-                {
-                    1 => RelationshipType.OneToMany,
-                    2 => RelationshipType.ManyToOne,
-                    3 => RelationshipType.ManyToMany,
-                    _ => throw new JsonException($"Invalid value for RelationshipType: {value}")
-                };
-            }
-
-            throw new JsonException($"Unexpected token {reader.TokenType} when reading RelationshipType.");
-        }
-
-        public override void Write(Utf8JsonWriter writer, RelationshipType value, JsonSerializerOptions options)
-        {
-            string enumValue = value switch
-            {
-                RelationshipType.OneToMany => "OneToMany",
-                RelationshipType.ManyToOne => "ManyToOne",
-                RelationshipType.ManyToMany => "ManyToMany",
-                _ => throw new JsonException($"Invalid value for RelationshipType: {value}")
-            };
-            writer.WriteStringValue(enumValue);
-        }
-    }
-
-    public class GitHubUser
-    {
-        [JsonPropertyName("login")]
         public string Login { get; set; }
     }
-
-
 }

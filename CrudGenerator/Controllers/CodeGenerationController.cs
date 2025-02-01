@@ -1,5 +1,6 @@
 ﻿using CrudGenerator.Data;
 using CrudGenerator.Interfaces;
+using CrudGenerator.Shared;
 using CrudGenerator.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,14 +18,10 @@ namespace CrudGenerator.Controllers
     public class CodeGenerationController : ControllerBase
     {
         private readonly ICodeGenerationService _codeGenerationService;
-        private readonly IUsageLogService _usageLogService;
-        private readonly AppDbContext _context;
 
-        public CodeGenerationController(ICodeGenerationService codeGenerationService, IUsageLogService usageLogService, AppDbContext context)
+        public CodeGenerationController(ICodeGenerationService codeGenerationService)
         {
             _codeGenerationService = codeGenerationService;
-            _usageLogService = usageLogService;
-            _context = context;
         }
 
         // Endpoint to generate code
@@ -40,19 +37,19 @@ namespace CrudGenerator.Controllers
             {
                 var attributes = model.Attributes.Select(attr => (attr.Name, attr.Type)).ToList();
 
-                // Generate code for the model
+                // Generate code for the model using handlers
                 var modelCode = await _codeGenerationService.GenerateModelCode(model.Name, attributes, model.Relationships, request.ProjectName);
                 generatedFiles.Add($"Models/{model.Name}.cs", modelCode);
 
-                // Generate service
+                // Generate service using handlers
                 var serviceCode = await _codeGenerationService.GenerateServiceCode(model.Name, request.ProjectName);
                 generatedFiles.Add($"Services/I{model.Name}Service.cs", serviceCode);
 
-                // Generate repository
+                // Generate repository using handlers
                 var repositoryCode = await _codeGenerationService.GenerateRepositoryCode(model.Name, request.ProjectName);
                 generatedFiles.Add($"Repositories/I{model.Name}Repository.cs", repositoryCode);
 
-                // Generate controller
+                // Generate controller using handlers
                 var controllerCode = await _codeGenerationService.GenerateControllerCode(model.Name, request.ProjectName);
                 generatedFiles.Add($"Controllers/{model.Name}Controller.cs", controllerCode);
             }
@@ -133,88 +130,4 @@ namespace CrudGenerator.Controllers
         }
     }
 
-    // Request model for code generation
-    public class CodeGenerationRequest
-    {
-        public string ProjectName { get; set; }
-        public List<ModelDefinition> Models { get; set; }
-        public string ResponseType { get; set; } // "zip" or "text"
-        public List<string> Roles { get; set; }
-        public bool IncludeJwtAuthentication { get; set; }
-    }
-
-    // Model definition for code generation
-    public class ModelDefinition
-    {
-        public string Name { get; set; }
-        public List<AttributeDefinition> Attributes { get; set; }
-        public List<Relationship> Relationships { get; set; }
-    }
-
-    // Attribute definition
-    public class AttributeDefinition
-    {
-        public string Name { get; set; }
-        public string Type { get; set; }
-    }
-
-    public class Relationship
-    {
-        public string PropertyName { get; set; }  // e.g., "Orders" in Customer model for one-to-many relationship
-        public string TargetModel { get; set; }    // e.g., "Order" for one-to-many relationship
-
-        [JsonConverter(typeof(RelationshipTypeConverter))]
-        public RelationshipType Type { get; set; }
-    }
-
-    public enum RelationshipType
-    {
-        OneToMany,
-        ManyToOne,
-        ManyToMany
-    }
-
-    public class RelationshipTypeConverter : JsonConverter<RelationshipType>
-    {
-        public override RelationshipType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            if (reader.TokenType == JsonTokenType.String)
-            {
-                string value = reader.GetString();
-                return value switch
-                {
-                    "OneToMany" => RelationshipType.OneToMany,
-                    "ManyToOne" => RelationshipType.ManyToOne,
-                    "ManyToMany" => RelationshipType.ManyToMany,
-                    _ => throw new JsonException($"Invalid value for RelationshipType: {value}")
-                };
-            }
-
-            if (reader.TokenType == JsonTokenType.Number)
-            {
-                int value = reader.GetInt32();
-                return value switch
-                {
-                    1 => RelationshipType.OneToMany,
-                    2 => RelationshipType.ManyToOne,
-                    3 => RelationshipType.ManyToMany,
-                    _ => throw new JsonException($"Invalid value for RelationshipType: {value}")
-                };
-            }
-
-            throw new JsonException($"Unexpected token {reader.TokenType} when reading RelationshipType.");
-        }
-
-        public override void Write(Utf8JsonWriter writer, RelationshipType value, JsonSerializerOptions options)
-        {
-            string enumValue = value switch
-            {
-                RelationshipType.OneToMany => "OneToMany",
-                RelationshipType.ManyToOne => "ManyToOne",
-                RelationshipType.ManyToMany => "ManyToMany",
-                _ => throw new JsonException($"Invalid value for RelationshipType: {value}")
-            };
-            writer.WriteStringValue(enumValue);
-        }
-    }
 }

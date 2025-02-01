@@ -1,4 +1,5 @@
-﻿using CrudGenerator.Controllers;
+﻿using CrudGenerator.Shared;
+using CrudGenerator.Handlers;
 using CrudGenerator.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -12,39 +13,23 @@ namespace CrudGenerator.Services
     {
         private readonly string _templateDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Templates");
 
+        private readonly IEnumerable<ICodeGenerationHandler> _handlers;
 
-
-
-
-
-
-
-        public async Task<string> GenerateModelCode(string modelName, List<(string Name, string Type)> attributes, List<Relationship> relationships, string projectName)
+        public CodeGenerationService(IEnumerable<ICodeGenerationHandler> handlers)
         {
-            var template = await ReadTemplateAsync("ModelTemplate.txt");
-
-            // Generate basic attribute definitions
-            var attributeDefinitions = string.Join(Environment.NewLine,
-                attributes.Select(attr => $"        public {attr.Type} {attr.Name} {{ get; set; }}"));
-
-            // Generate foreign key attributes for the "many" side of relationships
-            var foreignKeyAttributes = string.Join(Environment.NewLine,
-                relationships.Where(r => r.Type == RelationshipType.ManyToOne)
-                              .Select(rel => $"        public int {rel.TargetModel}Id {{ get; set; }}"));
-
-            // Merge the generated foreign key attributes with the existing attributes
-            attributeDefinitions = string.Join(Environment.NewLine, new[] { attributeDefinitions, foreignKeyAttributes });
-
-            // Generate the relationship code (navigation properties)
-            var relationshipDefinitions = string.Join(Environment.NewLine,
-                relationships.Select(rel => GenerateRelationshipCode(rel)));
-
-            // Replace both {{ModelName}} and {{ProjectName}} placeholders
-            return template.Replace("{{ModelName}}", modelName)
-                           .Replace("{{Attributes}}", attributeDefinitions)
-                           .Replace("{{Relationships}}", relationshipDefinitions)
-                           .Replace("{{ProjectName}}", projectName); // Replace {{ProjectName}}
+            _handlers = handlers;
         }
+
+
+
+        public async Task<string> GenerateModelCode(string modelName, List<(string Name, string Type)> attributes, List<Shared.Relationship> relationships, string projectName)
+        {
+            var handler = _handlers.OfType<ModelCodeGenerationHandler>().FirstOrDefault();
+            if (handler == null) throw new InvalidOperationException("Model handler not found.");
+
+            return await handler.GenerateCodeAsync(modelName, projectName, attributes, relationships);
+        }
+
 
         private string GenerateRelationshipCode(Relationship relationship)
         {
@@ -73,25 +58,26 @@ namespace CrudGenerator.Services
 
         public async Task<string> GenerateServiceCode(string modelName, string projectName)
         {
-            var template = await ReadTemplateAsync("ServiceTemplate.txt");
-            return template.Replace("{{ModelName}}", modelName)
-                           .Replace("{{ProjectName}}", projectName); // Replace {{ProjectName}}
+            var handler = _handlers.OfType<ServiceCodeGenerationHandler>().FirstOrDefault();
+            if (handler == null) throw new InvalidOperationException("Service handler not found.");
+
+            return await handler.GenerateCodeAsync(modelName, projectName);
         }
 
         public async Task<string> GenerateControllerCode(string modelName, string projectName)
         {
-            var template = await ReadTemplateAsync("ControllerTemplate.txt");
-            return template.Replace("{{ModelName}}", modelName)
-                           .Replace("{{ProjectName}}", projectName); // Replace {{ProjectName}}
+            var handler = _handlers.OfType<ControllerCodeGenerationHandler>().FirstOrDefault();
+            if (handler == null) throw new InvalidOperationException("Controller handler not found.");
+
+            return await handler.GenerateCodeAsync(modelName, projectName);
         }
 
         public async Task<string> GenerateRepositoryCode(string modelName, string projectName)
         {
-            var template = await ReadTemplateAsync("RepositoryTemplate.txt");
-            return template
-                .Replace("{{ModelName}}", modelName)
-                .Replace("{{ModelNamePlural}}", Pluralize(modelName))
-                .Replace("{{ProjectName}}", projectName); // Replace {{ProjectName}}
+            var handler = _handlers.OfType<RepositoryCodeGenerationHandler>().FirstOrDefault();
+            if (handler == null) throw new InvalidOperationException("Repository handler not found.");
+
+            return await handler.GenerateCodeAsync(modelName, projectName);
         }
 
         public async Task<string> GenerateDbContextCode(List<ModelDefinition> models, bool includeJwtAuthentication, string projectName)

@@ -3,6 +3,7 @@ using CrudGenerator.Services;
 using System;
 using Microsoft.EntityFrameworkCore;
 using CrudGenerator.Interfaces;
+using CrudGenerator.Handlers;
 
 
 
@@ -29,7 +30,10 @@ namespace CrudGenerator
             // Add services to the container
             builder.Services.AddScoped<ICodeGenerationService, CodeGenerationService>();
             builder.Services.AddScoped<IUsageLogService, UsageLogService>();
-
+            builder.Services.AddScoped<ICodeGenerationHandler, ModelCodeGenerationHandler>();
+            builder.Services.AddScoped<ICodeGenerationHandler, ServiceCodeGenerationHandler>();
+            builder.Services.AddScoped<ICodeGenerationHandler, RepositoryCodeGenerationHandler>();
+            builder.Services.AddScoped<ICodeGenerationHandler, ControllerCodeGenerationHandler>();
             // Configure CORS to allow requests from the Blazor client
             builder.Services.AddCors(options =>
             {

@@ -1,4 +1,4 @@
-﻿using CrudGenerator.Controllers;
+﻿using CrudGenerator.Shared;
 
 namespace CrudGenerator.Interfaces
 {

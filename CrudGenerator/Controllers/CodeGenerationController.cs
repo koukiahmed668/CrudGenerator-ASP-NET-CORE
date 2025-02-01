@@ -1,6 +1,6 @@
 ﻿using CrudGenerator.Data;
+using CrudGenerator.Interfaces;
 using CrudGenerator.Models;
-using CrudGenerator.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;

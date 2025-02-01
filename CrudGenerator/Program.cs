@@ -2,6 +2,7 @@ using CrudGenerator.Data;
 using CrudGenerator.Services;
 using System;
 using Microsoft.EntityFrameworkCore;
+using CrudGenerator.Interfaces;
 
 
 

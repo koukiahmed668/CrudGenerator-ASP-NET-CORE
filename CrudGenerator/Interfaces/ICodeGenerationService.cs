@@ -1,6 +1,6 @@
 ﻿using CrudGenerator.Controllers;
 
-namespace CrudGenerator.Services
+namespace CrudGenerator.Interfaces
 {
     public interface ICodeGenerationService
     {
@@ -11,12 +11,12 @@ namespace CrudGenerator.Services
         Task<string> GenerateDbContextCode(List<ModelDefinition> models, bool includeJwtAuthentication, string projectName);
 
         // New methods for authentication and authorization code generation
-        Task<string> GenerateJwtAuthenticationManagerCode( string projectName);
+        Task<string> GenerateJwtAuthenticationManagerCode(string projectName);
         Task<string> GenerateJwtAuthenticationControllerCode(string projectName);
-        Task<string> GenerateUserServiceCode( string projectName);
-        Task<string> GenerateUserRepositoryCode( string projectName);
-        Task<string> GenerateUserEntityCode( string projectName);
-        Task<string> GenerateJwtMiddlewareCode( string projectName);
+        Task<string> GenerateUserServiceCode(string projectName);
+        Task<string> GenerateUserRepositoryCode(string projectName);
+        Task<string> GenerateUserEntityCode(string projectName);
+        Task<string> GenerateJwtMiddlewareCode(string projectName);
         Task<string> GenerateAuthorizationCode(List<string> roles, string projectName);
 
         // New methods for full application generation

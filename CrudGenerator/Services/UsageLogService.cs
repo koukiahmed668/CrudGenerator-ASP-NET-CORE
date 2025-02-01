@@ -1,4 +1,5 @@
 ﻿using CrudGenerator.Data;
+using CrudGenerator.Interfaces;
 using CrudGenerator.Models;
 
 namespace CrudGenerator.Services

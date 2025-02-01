@@ -1,12 +1,12 @@
 ﻿using CrudGenerator.Models;
 
-namespace CrudGenerator.Services
+namespace CrudGenerator.Interfaces
 {
     public interface IUsageLogService
     {
         Task LogUsageAsync(UsageLog log);
     }
 
-   
+
 
 }
